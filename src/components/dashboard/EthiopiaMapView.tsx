@@ -10,6 +10,7 @@ import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "ge
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { colorRamp } from "@/lib/colors"
 import { formatCompact } from "@/lib/format"
+import { TooltipCard } from "@/components/dashboard/TooltipCard"
 
 type Props = {
   valuesByRegion?: Record<string, number>
@@ -97,6 +98,12 @@ export const EthiopiaMapView = (props: Props) => {
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(
     null
   )
+  const [hovered, setHovered] = useState<{
+    x: number
+    y: number
+    title: string
+    value: string
+  } | null>(null)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -129,7 +136,7 @@ export const EthiopiaMapView = (props: Props) => {
     const geoJsonLayer = new GeoJsonLayer({
       id: "ethiopia-regions",
       data: geoJsonData,
-      pickable: false,
+      pickable: true,
       stroked: true,
       filled: true,
       lineWidthMinPixels: 1,
@@ -206,8 +213,38 @@ export const EthiopiaMapView = (props: Props) => {
         })()}
         controller={{ dragPan: true, dragRotate: true, scrollZoom: true }}
         layers={layers}
+        onHover={(info) => {
+          if (!info?.object) {
+            setHovered(null)
+            return
+          }
+
+          const name = getFeatureName(info.object)
+          const value = values[name]
+          const title = name || "Region"
+          const valueText = value == null ? "—" : formatCompact(value)
+
+          // Pin to cursor within the map container. No backdrop/overlay.
+          setHovered({
+            x: info.x ?? 0,
+            y: info.y ?? 0,
+            title,
+            value: valueText,
+          })
+        }}
       >
       </DeckGL>
+
+      {hovered ? (
+        <div
+          className="pointer-events-none absolute left-0 top-0 z-20"
+          style={{
+            transform: `translate(${Math.max(0, hovered.x + 12)}px, ${Math.max(0, hovered.y + 12)}px)`,
+          }}
+        >
+          <TooltipCard title={hovered.title} value={hovered.value} />
+        </div>
+      ) : null}
     </div>
   )
 }
