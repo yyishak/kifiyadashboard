@@ -6,15 +6,12 @@ import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { WebMercatorViewport } from "@deck.gl/core"
 import type { Layer } from "@deck.gl/core"
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson"
-import { Map } from "react-map-gl/maplibre"
-import maplibregl from "maplibre-gl"
 
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { colorRamp } from "@/lib/colors"
 import { formatCompact } from "@/lib/format"
 
 type Props = {
-  mapStyle?: string
   valuesByRegion?: Record<string, number>
 }
 
@@ -210,15 +207,6 @@ export const EthiopiaMapView = (props: Props) => {
         controller={{ dragPan: true, dragRotate: true, scrollZoom: true }}
         layers={layers}
       >
-        <Map
-          reuseMaps
-          mapLib={maplibregl}
-          mapStyle={
-            props.mapStyle ??
-            "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-          }
-          attributionControl={false}
-        />
       </DeckGL>
     </div>
   )
