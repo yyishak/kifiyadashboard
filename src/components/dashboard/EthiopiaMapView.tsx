@@ -5,6 +5,7 @@ import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { FlyToInterpolator, WebMercatorViewport } from "@deck.gl/core"
 import type { Layer } from "@deck.gl/core"
+import { CollisionFilterExtension } from "@deck.gl/extensions"
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson"
 import Map from "react-map-gl/maplibre"
 
@@ -202,6 +203,8 @@ export const EthiopiaMapView = (props: Props) => {
     return { min, max }
   }, [values])
 
+  const isSidebarOpen = sidebar != null
+
   const closeSidebar = () => {
     setSidebar(null)
     setSelectedRegionName(null)
@@ -306,31 +309,18 @@ export const EthiopiaMapView = (props: Props) => {
       },
     })
 
-    const pillLayer = new TextLayer({
-      id: "ethiopia-pills",
+    const regionNameLayer = new TextLayer({
+      id: "ethiopia-region-names",
       data: (geoJsonData.features ?? []) as Feature<Geometry, GeoJsonProperties>[],
       pickable: false,
       getPosition: (f: unknown) => {
-        const feature = f as RegionFeature
-        const ll = feature?.properties?.labelLngLat
-        return Array.isArray(ll) && ll.length >= 2 && typeof ll[0] === "number" && typeof ll[1] === "number"
-          ? [ll[0], ll[1]]
-          : [0, 0]
+        const ll = getFeatureLabelLngLat(f)
+        return ll ?? [0, 0]
       },
       getText: (f: unknown) => {
         const name = getFeatureName(f)
         const meta = name ? getEthiopiaRegionMeta(name) : null
-        const displayName = meta?.name ?? name
-
-        const value = values[name]
-        if (typeof value !== "number") return displayName
-
-        const formatted = new Intl.NumberFormat("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(value)
-
-        return `${displayName}\n${formatted}`
+        return meta?.name ?? name
       },
       getColor: [255, 255, 255, 210],
       getSize: 12,
@@ -339,8 +329,10 @@ export const EthiopiaMapView = (props: Props) => {
       sizeMaxPixels: 16,
       getTextAnchor: "middle",
       getAlignmentBaseline: "center",
-      background: false,
-      getPixelOffset: [0, -6],
+      background: true,
+      getBackgroundColor: [0, 0, 0, 110],
+      backgroundPadding: [10, 7],
+      getPixelOffset: [0, 8],
       fontFamily:
         'Inter Tight, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial',
 
@@ -357,10 +349,52 @@ export const EthiopiaMapView = (props: Props) => {
         sizeMaxPixels: 120,
         sizeMinPixels: 10,
       },
-      extensions: [],
+      extensions: [new CollisionFilterExtension()],
     })
 
-    return [geoJsonLayer, hoverLayer, highlightLayer, pillLayer]
+    const regionValueLayer = new TextLayer({
+      id: "ethiopia-region-values",
+      data: (geoJsonData.features ?? []) as Feature<Geometry, GeoJsonProperties>[],
+      pickable: false,
+      getPosition: (f: unknown) => {
+        const ll = getFeatureLabelLngLat(f)
+        return ll ?? [0, 0]
+      },
+      getText: (f: unknown) => {
+        const name = getFeatureName(f)
+        const value = values[name]
+        if (typeof value !== "number") return ""
+        return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)
+      },
+      getColor: [242, 139, 44, 245],
+      getSize: 14,
+      sizeUnits: "pixels",
+      sizeMinPixels: 13,
+      sizeMaxPixels: 18,
+      fontWeight: 800,
+      getTextAnchor: "middle",
+      getAlignmentBaseline: "center",
+      background: true,
+      getBackgroundColor: [0, 0, 0, 110],
+      backgroundPadding: [10, 7],
+      getPixelOffset: [0, -10],
+      fontFamily:
+        'Inter Tight, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial',
+      collisionEnabled: true,
+      getCollisionPriority: (f: unknown) => {
+        const name = getFeatureName(f)
+        const value = values[name] ?? 0
+        return Math.log10(Math.max(1, value + 1))
+      },
+      collisionTestProps: {
+        sizeScale: 26,
+        sizeMaxPixels: 140,
+        sizeMinPixels: 10,
+      },
+      extensions: [new CollisionFilterExtension()],
+    })
+
+    return [geoJsonLayer, hoverLayer, highlightLayer, regionNameLayer, regionValueLayer]
   }, [hoveredRegionName, selectedRegionName, stats.max, values])
 
   const fitBounds = useMemo(() => computeGeoJsonBounds(geoJsonData), [])
@@ -529,29 +563,45 @@ export const EthiopiaMapView = (props: Props) => {
         />
       </DeckGL>
 
-      {sidebar ? (
-        <div className="absolute inset-0 z-30">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/30 backdrop-blur-[1px]"
-            onClick={closeSidebar}
-            aria-label="Close region details"
-          />
+      <div
+        className={[
+          "absolute inset-0 z-30 transition",
+          isSidebarOpen ? "pointer-events-auto" : "pointer-events-none",
+        ].join(" ")}
+        aria-hidden={!isSidebarOpen}
+      >
+        <button
+          type="button"
+          className={[
+            "absolute inset-0 bg-black/25 backdrop-blur-sm transition-opacity duration-200",
+            isSidebarOpen ? "opacity-100" : "opacity-0",
+          ].join(" ")}
+          onClick={closeSidebar}
+          aria-label="Close region details"
+          tabIndex={isSidebarOpen ? 0 : -1}
+        />
 
-          <aside
-            className="absolute right-0 top-0 h-full w-[340px] max-w-[92vw] border-l border-[color:var(--card-border)] bg-[color:var(--card)] shadow-[0_30px_80px_rgba(0,0,0,0.45)] md:w-[420px]"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Region details"
-          >
+        <aside
+          className={[
+            "absolute right-3 top-3 h-[calc(100%-1.5rem)] w-[340px] max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)]",
+            "bg-[color:var(--card)]/90 backdrop-blur-xl",
+            "transition-transform duration-250 ease-out will-change-transform",
+            isSidebarOpen ? "translate-x-0" : "translate-x-[calc(100%+24px)]",
+            "md:right-4 md:top-4 md:h-[calc(100%-2rem)] md:w-[420px]",
+          ].join(" ")}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Region details"
+        >
+          {sidebar ? (
             <div className="flex h-full flex-col">
               <div className="flex items-start justify-between gap-3 border-b border-[color:var(--card-border)] p-4">
-                <div>
-                  <div className="text-sm font-semibold tracking-wide text-[color:var(--fg)]">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
                     {sidebar.displayName}
                   </div>
                   {sidebar.capital ? (
-                    <div className="mt-1 text-xs font-medium text-[color:var(--muted)]">
+                    <div className="mt-1 truncate text-xs font-medium text-[color:var(--muted)]">
                       Capital: {sidebar.capital}
                     </div>
                   ) : null}
@@ -560,7 +610,7 @@ export const EthiopiaMapView = (props: Props) => {
                 <button
                   type="button"
                   onClick={closeSidebar}
-                  className="grid h-9 w-9 place-items-center rounded-lg border border-[color:var(--card-border)] bg-[color:var(--surface-2)] text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)]"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)] text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]"
                   aria-label="Close"
                 >
                   ×
@@ -579,13 +629,13 @@ export const EthiopiaMapView = (props: Props) => {
                 </div>
               </div>
 
-              <div className="mt-auto p-4 text-xs text-[color:var(--muted)]">
+              <div className="mt-auto border-t border-[color:var(--card-border)] p-4 text-xs text-[color:var(--muted)]">
                 Click another region to update this panel.
               </div>
             </div>
-          </aside>
-        </div>
-      ) : null}
+          ) : null}
+        </aside>
+      </div>
     </div>
   )
 }
