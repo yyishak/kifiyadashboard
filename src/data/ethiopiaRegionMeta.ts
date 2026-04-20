@@ -20,7 +20,7 @@ const META: EthiopiaRegionMeta[] = [
     longitude: 35.3115,
     capital: "Asosa",
   },
-  { key: "Central Ethiopia", name: "Central Ethiopia", latitude: 7.6481, longitude: 38.0, capital: "Hosaina" },
+  { key: "Central Ethiopia", name: "Central Ethiopia", latitude: 7.0666667, longitude: 38.0, capital: "Hosaina" },
   { key: "Dire Dawa", name: "Dire Dawa", latitude: 9.6009, longitude: 41.8592, capital: "Dire Dawa" },
   { key: "Gambela", name: "Gambela", latitude: 7.9177, longitude: 34.5825, capital: "Gambela" },
   { key: "Harar", name: "Harari", latitude: 9.3149, longitude: 42.1182, capital: "Harar" },

@@ -5,7 +5,6 @@ import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { FlyToInterpolator, WebMercatorViewport } from "@deck.gl/core"
 import type { Layer } from "@deck.gl/core"
-import { CollisionFilterExtension } from "@deck.gl/extensions"
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson"
 import Map from "react-map-gl/maplibre"
 
@@ -123,7 +122,6 @@ export const EthiopiaMapView = (props: Props) => {
   const [viewState, setViewState] = useState<
     (typeof INITIAL_VIEW_STATE & { width?: number; height?: number }) | null
   >(null)
-  const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null)
   const [mapStyle, setMapStyle] = useState<unknown>(MAP_STYLE_URL)
   const [selectedRegionName, setSelectedRegionName] = useState<string | null>(null)
   const [selected, setSelected] = useState<{
@@ -160,15 +158,28 @@ export const EthiopiaMapView = (props: Props) => {
       .then((r) => r.json())
       .then((style) => {
         if (cancelled) return
-        if (style && typeof style === "object" && Array.isArray((style as any).layers)) {
-          ;(style as any).layers = (style as any).layers.map((layer: any) => {
-            const next = { ...layer }
-            if (next?.id === "background" && next?.paint) {
-              next.paint = { ...next.paint, "background-color": MAP_DARK_TINT }
-            }
-            if (next?.paint) next.paint = tint(next.paint)
-            return next
-          })
+        if (style && typeof style === "object") {
+          const typedStyle = style as { layers?: unknown[] }
+          if (Array.isArray(typedStyle.layers)) {
+            typedStyle.layers = typedStyle.layers.map((layer) => {
+              const next = typeof layer === "object" && layer != null ? { ...(layer as Record<string, unknown>) } : layer
+              if (typeof next === "object" && next != null) {
+                const id = (next as Record<string, unknown>).id
+                const paint = (next as Record<string, unknown>).paint
+                if (id === "background" && typeof paint === "object" && paint != null) {
+                  ;(next as Record<string, unknown>).paint = {
+                    ...(paint as Record<string, unknown>),
+                    "background-color": MAP_DARK_TINT,
+                  }
+                }
+                const nextPaint = (next as Record<string, unknown>).paint
+                if (typeof nextPaint === "object" && nextPaint != null) {
+                  ;(next as Record<string, unknown>).paint = tint(nextPaint) as Record<string, unknown>
+                }
+              }
+              return next
+            })
+          }
         }
         setMapStyle(style)
       })
@@ -301,7 +312,7 @@ export const EthiopiaMapView = (props: Props) => {
         sizeMaxPixels: 120,
         sizeMinPixels: 10,
       },
-      extensions: [new CollisionFilterExtension()],
+      extensions: [],
     })
 
     return [geoJsonLayer, highlightLayer, pillLayer]
@@ -364,7 +375,6 @@ export const EthiopiaMapView = (props: Props) => {
       const rect = el.getBoundingClientRect()
       const width = Math.max(1, Math.round(rect.width))
       const height = Math.max(1, Math.round(rect.height))
-      setViewportSize({ width, height })
 
       setViewState((prev) => {
         if (prev) return prev

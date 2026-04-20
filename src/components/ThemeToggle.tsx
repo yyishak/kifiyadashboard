@@ -16,13 +16,12 @@ const getInitialTheme = (): Theme => {
 }
 
 export const ThemeToggle = ({ className }: Props) => {
-  const [theme, setTheme] = useState<Theme>("dark")
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme())
 
   useEffect(() => {
-    const t = getInitialTheme()
-    setTheme(t)
-    document.documentElement.dataset.theme = t
-  }, [])
+    document.documentElement.dataset.theme = theme
+    window.localStorage.setItem("theme", theme)
+  }, [theme])
 
   const toggle = () => {
     const next: Theme = theme === "dark" ? "light" : "dark"
