@@ -10,7 +10,6 @@ import Map from "react-map-gl/maplibre"
 
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { getEthiopiaRegionMeta } from "@/data/ethiopiaRegionMeta"
-import { colorRamp } from "@/lib/colors"
 
 type Props = {
   valuesByRegion?: Record<string, number>
@@ -229,9 +228,8 @@ export const EthiopiaMapView = (props: Props) => {
       getLineWidth: 1,
       getFillColor: (f: unknown) => {
         const name = getFeatureName(f)
-        const value = values[name] ?? 0
-        const t = stats.max === 0 ? 0 : value / stats.max
-        return [0, 0, 0, 1]
+        void values[name]
+        return [0, 0, 0, 0]
       },
       updateTriggers: {
         getFillColor: [stats.max],
@@ -275,7 +273,7 @@ export const EthiopiaMapView = (props: Props) => {
       pickable: false,
       stroked: true,
       filled: true,
-      extruded: true,
+      extruded: false,
       wireframe: false,
       opacity: 0.98,
       getLineColor: [255, 255, 255, 110],
