@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(#02404F);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter-tight);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #02404F;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+#deckgl-wrapper #view-default-view {
+  left: -68px !important;
+  top: -108px !important;
+}

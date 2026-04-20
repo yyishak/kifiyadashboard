@@ -1,0 +1,118 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Tigray", "labelLngLat": [39.5, 14.2] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[38.3, 15.2], [41.0, 15.2], [41.0, 13.2], [38.3, 13.2], [38.3, 15.2]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Afar", "labelLngLat": [41.6, 12.8] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[40.6, 14.2], [43.2, 14.2], [43.2, 11.7], [40.6, 11.7], [40.6, 14.2]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Amhara", "labelLngLat": [38.8, 11.8] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.9, 13.2], [40.6, 13.2], [40.6, 10.4], [36.9, 10.4], [36.9, 13.2]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Benishangul Gumuz", "labelLngLat": [35.7, 10.6] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[34.6, 12.0], [36.9, 12.0], [36.9, 9.2], [34.6, 9.2], [34.6, 12.0]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Gambela", "labelLngLat": [34.3, 8.5] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[33.2, 9.5], [35.0, 9.5], [35.0, 7.4], [33.2, 7.4], [33.2, 9.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Central Ethiopia", "labelLngLat": [38.6, 9.1] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[37.7, 10.4], [39.8, 10.4], [39.8, 8.4], [37.7, 8.4], [37.7, 10.4]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Addis Ababa", "labelLngLat": [38.78, 8.98] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[38.6, 9.1], [39.0, 9.1], [39.0, 8.8], [38.6, 8.8], [38.6, 9.1]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Oromia", "labelLngLat": [39.6, 7.7] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.2, 10.4], [43.0, 10.4], [43.0, 4.6], [36.2, 4.6], [36.2, 10.4]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Somali", "labelLngLat": [44.2, 6.5] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[43.0, 10.2], [47.1, 10.2], [47.1, 4.4], [43.0, 4.4], [43.0, 10.2]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Dire Dawa", "labelLngLat": [41.9, 9.6] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[41.6, 9.8], [42.2, 9.8], [42.2, 9.4], [41.6, 9.4], [41.6, 9.8]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Harar", "labelLngLat": [42.1, 9.3] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[41.9, 9.45], [42.35, 9.45], [42.35, 9.1], [41.9, 9.1], [41.9, 9.45]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Sidama", "labelLngLat": [38.4, 6.7] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[37.7, 7.4], [39.0, 7.4], [39.0, 6.1], [37.7, 6.1], [37.7, 7.4]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "SNNP", "labelLngLat": [36.9, 6.2] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[35.1, 7.4], [37.7, 7.4], [37.7, 4.9], [35.1, 4.9], [35.1, 7.4]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "SWEP", "labelLngLat": [35.9, 5.6] },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[34.8, 7.1], [35.9, 7.1], [35.9, 4.7], [34.8, 4.7], [34.8, 7.1]]]
+      }
+    }
+  ]
+}
+
