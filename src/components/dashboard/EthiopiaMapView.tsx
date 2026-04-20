@@ -5,6 +5,7 @@ import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { WebMercatorViewport } from "@deck.gl/core"
 import type { Layer } from "@deck.gl/core"
+import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson"
 import { Map } from "react-map-gl/maplibre"
 import maplibregl from "maplibre-gl"
 
@@ -41,7 +42,7 @@ type RegionFeatureCollection = {
   features?: RegionFeature[]
 }
 
-const geoJsonData = ethiopiaGeoJson as unknown as RegionFeatureCollection
+const geoJsonData = ethiopiaGeoJson as unknown as FeatureCollection<Geometry, GeoJsonProperties>
 
 const getFeatureName = (feature: unknown) => {
   if (typeof feature !== "object" || feature == null) return ""
@@ -130,7 +131,7 @@ export const EthiopiaMapView = (props: Props) => {
   const layers = useMemo((): Layer[] => {
     const geoJsonLayer = new GeoJsonLayer({
       id: "ethiopia-regions",
-      data: geoJsonData as unknown,
+      data: geoJsonData,
       pickable: false,
       stroked: true,
       filled: true,
@@ -150,7 +151,7 @@ export const EthiopiaMapView = (props: Props) => {
 
     const pillLayer = new TextLayer({
       id: "ethiopia-pills",
-      data: geoJsonData.features ?? [],
+      data: (geoJsonData.features ?? []) as Feature<Geometry, GeoJsonProperties>[],
       pickable: false,
       getPosition: (f: unknown) => {
         const feature = f as RegionFeature
