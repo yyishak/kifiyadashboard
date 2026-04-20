@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 
 import type { Partner } from "@/data/partners"
 import type { PartnerId } from "@/data/partnerKpis"
@@ -54,6 +55,22 @@ export const DashboardClient = () => {
       <div className="mt-4 h-px w-full bg-white/20" />
 
       <section className="mt-3">
+        <nav className="mb-3 flex flex-wrap items-center gap-2">
+          {[
+            { href: "/", label: "Main" },
+            { href: "/kifiya-central", label: "Kifiya central" },
+            { href: "/ceo-dashboard", label: "CEO dashboard" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="inline-flex h-8 items-center justify-center rounded-full border border-white/15 bg-white/10 px-3 text-xs font-semibold tracking-wide text-white/90 transition hover:border-white/25 hover:bg-white/15"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
         <div
           className="w-full overflow-x-auto"
           aria-label="Partner tabs"

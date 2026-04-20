@@ -8,6 +8,16 @@ export default function Home() {
       <div className="mx-auto w-full max-w-[546px]">
         <header className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
+            <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold tracking-wide text-white/70">
+              <Link href="/kifiya-central" className="hover:text-white">
+                Kifiya central
+              </Link>
+              <span className="text-white/35">/</span>
+              <Link href="/ceo-dashboard" className="hover:text-white">
+                CEO dashboard
+              </Link>
+            </nav>
+
             <p className="text-[26px] font-semibold tracking-wide text-white/70">
               Leveraging AI and Data to unlock
             </p>
@@ -18,18 +28,6 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2 pt-1">
-            <Link
-              href="/kifiya-central"
-              className="inline-flex h-9 items-center justify-center rounded-full border border-white/15 bg-white/10 px-3 text-sm font-semibold tracking-wide text-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur transition hover:border-white/25 hover:bg-white/15"
-            >
-              Kifiya central
-            </Link>
-            <Link
-              href="/ceo-dashboard"
-              className="inline-flex h-9 items-center justify-center rounded-full border border-white/15 bg-white/10 px-3 text-sm font-semibold tracking-wide text-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur transition hover:border-white/25 hover:bg-white/15"
-            >
-              CEO dashboard
-            </Link>
             <FullscreenToggle />
           </div>
         </header>
