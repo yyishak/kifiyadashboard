@@ -11,7 +11,6 @@ import Map from "react-map-gl/maplibre"
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { getEthiopiaRegionMeta } from "@/data/ethiopiaRegionMeta"
 import { colorRamp } from "@/lib/colors"
-import { TooltipCard } from "@/components/dashboard/TooltipCard"
 
 type Props = {
   valuesByRegion?: Record<string, number>
@@ -43,6 +42,15 @@ type RegionFeature = {
 
 type RegionFeatureCollection = {
   features?: RegionFeature[]
+}
+
+type RegionSidebarData = {
+  key: string
+  displayName: string
+  capital: string | null
+  value: number | null
+  valueText: string
+  percentText: string
 }
 
 const geoJsonData = ethiopiaGeoJson as unknown as FeatureCollection<Geometry, GeoJsonProperties>
@@ -124,12 +132,7 @@ export const EthiopiaMapView = (props: Props) => {
   >(null)
   const [mapStyle, setMapStyle] = useState<unknown>(MAP_STYLE_URL)
   const [selectedRegionName, setSelectedRegionName] = useState<string | null>(null)
-  const [selected, setSelected] = useState<{
-    x: number
-    y: number
-    title: string
-    value: string
-  } | null>(null)
+  const [sidebar, setSidebar] = useState<RegionSidebarData | null>(null)
 
   const values = useMemo(
     () => props.valuesByRegion ?? {},
@@ -198,6 +201,11 @@ export const EthiopiaMapView = (props: Props) => {
     const min = Math.min(...nums, 0)
     return { min, max }
   }, [values])
+
+  const closeSidebar = () => {
+    setSidebar(null)
+    setSelectedRegionName(null)
+  }
 
   const layers = useMemo((): Layer[] => {
     const selectedFeature =
@@ -409,13 +417,17 @@ export const EthiopiaMapView = (props: Props) => {
         }}
         onClick={(info) => {
           if (!info?.object) {
-            setSelected(null)
-            setSelectedRegionName(null)
+            closeSidebar()
             return
           }
 
           const name = getFeatureName(info.object)
-          setSelectedRegionName(name || null)
+          if (!name) {
+            closeSidebar()
+            return
+          }
+
+          setSelectedRegionName(name)
 
           const ll = getFeatureLabelLngLat(info.object)
           if (ll) {
@@ -439,20 +451,30 @@ export const EthiopiaMapView = (props: Props) => {
           }
 
           const value = values[name]
-          const title = name || "Region"
-          const valueText =
-            value == null
-              ? "—"
-              : `${new Intl.NumberFormat("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(value)} (${Math.round((value / Math.max(1, stats.max)) * 100)}%)`
+          const meta = getEthiopiaRegionMeta(name)
+          const displayName = meta?.name ?? name
+          const capital = meta?.capital ?? null
 
-          setSelected({
-            x: info.x ?? 0,
-            y: info.y ?? 0,
-            title,
-            value: valueText,
+          const valueNumber = typeof value === "number" ? value : null
+          const valueText =
+            valueNumber == null
+              ? "—"
+              : new Intl.NumberFormat("en-US", {
+                  maximumFractionDigits: 0,
+                }).format(valueNumber)
+
+          const percentText =
+            valueNumber == null
+              ? "—"
+              : `${Math.round((valueNumber / Math.max(1, stats.max)) * 100)}% of max`
+
+          setSidebar({
+            key: name,
+            displayName,
+            capital,
+            value: valueNumber,
+            valueText,
+            percentText,
           })
         }}
       >
@@ -465,24 +487,61 @@ export const EthiopiaMapView = (props: Props) => {
         />
       </DeckGL>
 
-      {selected ? (
-        <div
-          className="absolute left-0 top-0 z-30"
-          style={{
-            transform: `translate(${Math.max(0, selected.x + 12)}px, ${Math.max(0, selected.y + 12)}px)`,
-          }}
-        >
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setSelected(null)}
-              className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full border border-white/20 bg-[#02404F] text-xs text-white shadow-[0_10px_35px_rgba(0,0,0,0.35)]"
-              aria-label="Close region details"
-            >
-              ×
-            </button>
-            <TooltipCard title={selected.title} value={selected.value} />
-          </div>
+      {sidebar ? (
+        <div className="absolute inset-0 z-30">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/30 backdrop-blur-[1px]"
+            onClick={closeSidebar}
+            aria-label="Close region details"
+          />
+
+          <aside
+            className="absolute right-0 top-0 h-full w-[340px] max-w-[92vw] border-l border-[color:var(--card-border)] bg-[color:var(--card)] shadow-[0_30px_80px_rgba(0,0,0,0.45)] md:w-[420px]"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Region details"
+          >
+            <div className="flex h-full flex-col">
+              <div className="flex items-start justify-between gap-3 border-b border-[color:var(--card-border)] p-4">
+                <div>
+                  <div className="text-sm font-semibold tracking-wide text-[color:var(--fg)]">
+                    {sidebar.displayName}
+                  </div>
+                  {sidebar.capital ? (
+                    <div className="mt-1 text-xs font-medium text-[color:var(--muted)]">
+                      Capital: {sidebar.capital}
+                    </div>
+                  ) : null}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={closeSidebar}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-[color:var(--card-border)] bg-[color:var(--surface-2)] text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)]"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="p-4">
+                <div className="text-xs font-semibold tracking-wide text-[color:var(--muted)]">
+                  Total MSME&apos;s
+                </div>
+                <div className="mt-1 text-3xl font-bold tracking-tight text-[color:var(--accent)]">
+                  {sidebar.valueText}
+                </div>
+                <div className="mt-2 text-sm font-medium text-[color:var(--muted)]">
+                  {sidebar.percentText}
+                </div>
+              </div>
+
+              <div className="mt-auto p-4 text-xs text-[color:var(--muted)]">
+                Click another region to update this panel.
+              </div>
+            </div>
+          </aside>
         </div>
       ) : null}
     </div>
