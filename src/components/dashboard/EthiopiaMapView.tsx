@@ -13,10 +13,15 @@ import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { colorRamp } from "@/lib/colors"
 import { formatCompact } from "@/lib/format"
 import { TooltipCard } from "@/components/dashboard/TooltipCard"
+import { RegionPin } from "@/components/dashboard/RegionPin"
 
 type Props = {
   valuesByRegion?: Record<string, number>
 }
+
+const MAP_STYLE_URL =
+  "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"
+const MAP_DARK_TINT = "#00313D"
 
 const INITIAL_VIEW_STATE = {
   longitude: 40.0,
@@ -49,6 +54,16 @@ const getFeatureName = (feature: unknown) => {
   const f = feature as RegionFeature
   const name = f.properties?.name
   return `${typeof name === "string" ? name : ""}`.trim()
+}
+
+const getFeatureLabelLngLat = (feature: unknown): [number, number] | null => {
+  if (typeof feature !== "object" || feature == null) return null
+  const f = feature as RegionFeature
+  const ll = f.properties?.labelLngLat
+  if (Array.isArray(ll) && ll.length >= 2 && typeof ll[0] === "number" && typeof ll[1] === "number") {
+    return [ll[0], ll[1]]
+  }
+  return null
 }
 
 type LngLatBounds = [[number, number], [number, number]]
@@ -100,7 +115,9 @@ export const EthiopiaMapView = (props: Props) => {
   const [viewState, setViewState] = useState<
     (typeof INITIAL_VIEW_STATE & { width?: number; height?: number }) | null
   >(null)
-  const [hovered, setHovered] = useState<{
+  const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null)
+  const [mapStyle, setMapStyle] = useState<unknown>(MAP_STYLE_URL)
+  const [selected, setSelected] = useState<{
     x: number
     y: number
     title: string
@@ -112,6 +129,49 @@ export const EthiopiaMapView = (props: Props) => {
     [props.valuesByRegion]
   )
 
+  useEffect(() => {
+    let cancelled = false
+
+    const tint = (value: unknown): unknown => {
+      if (typeof value === "string") {
+        const v = value.toLowerCase()
+        if (v === "#0e0e0e" || v === "#111" || v === "#000" || v === "#000000") return MAP_DARK_TINT
+        return v.replace(/rgba\(0,\s*0,\s*0,\s*([0-9.]+)\)/g, `rgba(0, 49, 61, $1)`)
+      }
+      if (Array.isArray(value)) return value.map(tint)
+      if (typeof value === "object" && value != null) {
+        const out: Record<string, unknown> = {}
+        for (const [k, v] of Object.entries(value)) out[k] = tint(v)
+        return out
+      }
+      return value
+    }
+
+    fetch(MAP_STYLE_URL)
+      .then((r) => r.json())
+      .then((style) => {
+        if (cancelled) return
+        if (style && typeof style === "object" && Array.isArray((style as any).layers)) {
+          ;(style as any).layers = (style as any).layers.map((layer: any) => {
+            const next = { ...layer }
+            if (next?.id === "background" && next?.paint) {
+              next.paint = { ...next.paint, "background-color": MAP_DARK_TINT }
+            }
+            if (next?.paint) next.paint = tint(next.paint)
+            return next
+          })
+        }
+        setMapStyle(style)
+      })
+      .catch(() => {
+        if (!cancelled) setMapStyle(MAP_STYLE_URL)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const stats = useMemo(() => {
     const nums = Object.values(values)
     const max = Math.max(...nums, 1)
@@ -119,13 +179,42 @@ export const EthiopiaMapView = (props: Props) => {
     return { min, max }
   }, [values])
 
+  const regionPins = useMemo(() => {
+    if (!viewportSize) return []
+    const vs = viewState ?? INITIAL_VIEW_STATE
+    const viewport = new WebMercatorViewport({
+      width: viewportSize.width,
+      height: viewportSize.height,
+      longitude: vs.longitude,
+      latitude: vs.latitude,
+      zoom: vs.zoom,
+      bearing: 0,
+      pitch: 0,
+    })
+
+    return (geoJsonData.features ?? [])
+      .map((f) => {
+        const name = getFeatureName(f)
+        const ll = getFeatureLabelLngLat(f)
+        if (!name || !ll) return null
+        const raw = values[name]
+        const value =
+          typeof raw === "number"
+            ? new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(raw)
+            : "—"
+        const [x, y] = viewport.project(ll)
+        return { name, value, x, y }
+      })
+      .filter(Boolean) as Array<{ name: string; value: string; x: number; y: number }>
+  }, [viewState, viewportSize])
+
   const layers = useMemo((): Layer[] => {
     const geoJsonLayer = new GeoJsonLayer({
       id: "ethiopia-regions",
       data: geoJsonData,
       pickable: true,
-      stroked: true,
-      filled: true,
+      stroked: false,
+      filled: false,
       lineWidthMinPixels: 1,
       getLineColor: [255, 255, 255, 35],
       getLineWidth: 1,
@@ -245,6 +334,7 @@ export const EthiopiaMapView = (props: Props) => {
       const rect = el.getBoundingClientRect()
       const width = Math.max(1, Math.round(rect.width))
       const height = Math.max(1, Math.round(rect.height))
+      setViewportSize({ width, height })
 
       setViewState((prev) => {
         if (prev) return prev
@@ -277,19 +367,21 @@ export const EthiopiaMapView = (props: Props) => {
           const clamped = clampViewState ? clampViewState(next) : next
           setViewState(clamped)
         }}
-        onHover={(info) => {
+        onClick={(info) => {
           if (!info?.object) {
-            setHovered(null)
+            setSelected(null)
             return
           }
 
           const name = getFeatureName(info.object)
           const value = values[name]
           const title = name || "Region"
-          const valueText = value == null ? "—" : formatCompact(value)
+          const valueText =
+            value == null
+              ? "—"
+              : `${formatCompact(value)} (${Math.round((value / Math.max(1, stats.max)) * 100)}%)`
 
-          // Pin to cursor within the map container. No backdrop/overlay.
-          setHovered({
+          setSelected({
             x: info.x ?? 0,
             y: info.y ?? 0,
             title,
@@ -300,20 +392,46 @@ export const EthiopiaMapView = (props: Props) => {
         <Map
           reuseMaps
           attributionControl={false}
-          mapStyle="https://demotiles.maplibre.org/style.json"
+          mapStyle={mapStyle as never}
           dragRotate={false}
           maxPitch={0}
         />
       </DeckGL>
 
-      {hovered ? (
+      {regionPins.map((p) => (
         <div
+          key={p.name}
           className="pointer-events-none absolute left-0 top-0 z-20"
           style={{
-            transform: `translate(${Math.max(0, hovered.x + 12)}px, ${Math.max(0, hovered.y + 12)}px)`,
+            transform: `translate(${Math.round(p.x - 94)}px, ${Math.round(p.y - 98)}px)`,
           }}
         >
-          <TooltipCard title={hovered.title} value={hovered.value} />
+          <RegionPin
+            label={p.name}
+            value={p.value}
+            className="h-[66px] w-[128px] drop-shadow-[0_10px_35px_rgba(0,0,0,0.35)]"
+          />
+        </div>
+      ))}
+
+      {selected ? (
+        <div
+          className="absolute left-0 top-0 z-30"
+          style={{
+            transform: `translate(${Math.max(0, selected.x + 12)}px, ${Math.max(0, selected.y + 12)}px)`,
+          }}
+        >
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setSelected(null)}
+              className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full border border-white/20 bg-[#02404F] text-xs text-white shadow-[0_10px_35px_rgba(0,0,0,0.35)]"
+              aria-label="Close region details"
+            >
+              ×
+            </button>
+            <TooltipCard title={selected.title} value={selected.value} />
+          </div>
         </div>
       ) : null}
     </div>
