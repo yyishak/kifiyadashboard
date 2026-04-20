@@ -1,5 +1,6 @@
 import { DashboardClient } from "@/components/dashboard/DashboardClient"
 import { FullscreenToggle } from "@/components/FullscreenToggle"
+import Link from "next/link"
 
 export default function Home() {
   return (
@@ -16,7 +17,19 @@ export default function Home() {
             </h1>
           </div>
 
-          <div className="pt-1">
+          <div className="flex items-center gap-2 pt-1">
+            <Link
+              href="/kifiya-central"
+              className="inline-flex h-9 items-center justify-center rounded-full border border-white/15 bg-white/10 px-3 text-sm font-semibold tracking-wide text-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur transition hover:border-white/25 hover:bg-white/15"
+            >
+              Kifiya central
+            </Link>
+            <Link
+              href="/ceo-dashboard"
+              className="inline-flex h-9 items-center justify-center rounded-full border border-white/15 bg-white/10 px-3 text-sm font-semibold tracking-wide text-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur transition hover:border-white/25 hover:bg-white/15"
+            >
+              CEO dashboard
+            </Link>
             <FullscreenToggle />
           </div>
         </header>
