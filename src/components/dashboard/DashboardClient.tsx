@@ -76,7 +76,7 @@ export const DashboardClient = () => {
           aria-label="Partner tabs"
           role="tablist"
         >
-          <div className="flex w-max min-w-full items-center justify-between gap-3 rounded-[48px] border border-[color:var(--card-border)] bg-[color:var(--card)] py-1">
+          <div className="flex w-max min-w-full items-center justify-between gap-3 rounded-[10px] border border-[color:var(--card-border)] bg-[color:var(--card)] px-1.5 py-1">
             <button
               key="all"
               type="button"

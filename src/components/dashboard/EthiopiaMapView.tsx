@@ -378,7 +378,7 @@ export const EthiopiaMapView = (props: Props) => {
   }, [clampViewState, computeInitialViewState])
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden">
+    <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-[10px] px-1.5">
       <DeckGL
         viewState={viewState ?? INITIAL_VIEW_STATE}
         controller={{
