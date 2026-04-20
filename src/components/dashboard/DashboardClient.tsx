@@ -9,6 +9,7 @@ import { partners } from "@/data/partners"
 import { kpis } from "@/data/kpis"
 import { MapPanelNoSSR } from "@/components/dashboard/MapPanelNoSSR"
 import { partnerRegionValues } from "@/data/partnerRegionValues"
+import frameCollage from "@/logo/Frame 2085661624.png"
 
 const getPartnerId = (partner: Partner): PartnerId => partner.id as PartnerId
 
@@ -50,7 +51,7 @@ export const DashboardClient = () => {
           aria-label="Partner tabs"
           role="tablist"
         >
-          <div className="flex w-max min-w-full items-center justify-between gap-3 py-1">
+          <div className="flex w-max min-w-full items-center justify-between gap-3 py-1 rounded-[48px] border border-black bg-white">
             {partners.map((partner) => {
               const id = getPartnerId(partner)
               const isActive = id === activePartnerId
@@ -86,6 +87,17 @@ export const DashboardClient = () => {
 
       <section className="mt-6 -mx-5 md:-mx-8">
         <MapPanelNoSSR valuesByRegion={mapValues} />
+      </section>
+
+      <section className="mt-6">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+          <Image
+            src={frameCollage}
+            alt="MSME collage"
+            className="h-auto w-full"
+            priority
+          />
+        </div>
       </section>
     </>
   )
