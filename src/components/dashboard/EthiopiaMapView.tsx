@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
-import { WebMercatorViewport } from "@deck.gl/core"
+import { FlyToInterpolator, WebMercatorViewport } from "@deck.gl/core"
 import type { Layer } from "@deck.gl/core"
 import { CollisionFilterExtension } from "@deck.gl/extensions"
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson"
@@ -127,6 +127,7 @@ export const EthiopiaMapView = (props: Props) => {
   >(null)
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null)
   const [mapStyle, setMapStyle] = useState<unknown>(MAP_STYLE_URL)
+  const [selectedRegionName, setSelectedRegionName] = useState<string | null>(null)
   const [selected, setSelected] = useState<{
     x: number
     y: number
@@ -220,6 +221,11 @@ export const EthiopiaMapView = (props: Props) => {
   }, [viewState, viewportSize])
 
   const layers = useMemo((): Layer[] => {
+    const selectedFeature =
+      selectedRegionName != null
+        ? (geoJsonData.features ?? []).find((f) => getFeatureName(f) === selectedRegionName) ?? null
+        : null
+
     const geoJsonLayer = new GeoJsonLayer({
       id: "ethiopia-regions",
       data: geoJsonData,
@@ -237,6 +243,42 @@ export const EthiopiaMapView = (props: Props) => {
       },
       updateTriggers: {
         getFillColor: [stats.max],
+      },
+    })
+
+    const highlightLayer = new GeoJsonLayer({
+      id: "ethiopia-region-highlight",
+      data: selectedFeature
+        ? ({
+            type: "FeatureCollection",
+            features: [selectedFeature],
+          } as FeatureCollection<Geometry, GeoJsonProperties>)
+        : undefined,
+      pickable: false,
+      stroked: true,
+      filled: true,
+      extruded: true,
+      wireframe: false,
+      opacity: 0.98,
+      getLineColor: [255, 255, 255, 110],
+      getLineWidth: 2,
+      lineWidthMinPixels: 2,
+      getFillColor: [242, 139, 44, 190],
+      getElevation: (f: unknown) => {
+        const name = getFeatureName(f)
+        if (!name) return 0
+        const value = values[name] ?? 0
+        const t = stats.max === 0 ? 0 : value / stats.max
+        // "Classic" pop: bigger lift for bigger values.
+        return 12000 + Math.round(90000 * t)
+      },
+      transitions: {
+        getElevation: { duration: 700 },
+        getFillColor: { duration: 350 },
+      },
+      updateTriggers: {
+        getElevation: [selectedRegionName, stats.max],
+        getFillColor: [selectedRegionName],
       },
     })
 
@@ -287,8 +329,8 @@ export const EthiopiaMapView = (props: Props) => {
       extensions: [new CollisionFilterExtension()],
     })
 
-    return [geoJsonLayer, pillLayer]
-  }, [stats.max, values])
+    return [geoJsonLayer, highlightLayer, pillLayer]
+  }, [selectedRegionName, stats.max, values])
 
   const fitBounds = useMemo(() => computeGeoJsonBounds(geoJsonData), [])
 
@@ -334,8 +376,8 @@ export const EthiopiaMapView = (props: Props) => {
       longitude: clamp(next.longitude, minLng, maxLng),
       latitude: clamp(next.latitude, minLat, maxLat),
       // "Lock" orientation to avoid drifting away from Ethiopia.
-      bearing: 0,
-      pitch: INITIAL_VIEW_STATE.pitch,
+      bearing: next.bearing ?? 0,
+      pitch: next.pitch ?? INITIAL_VIEW_STATE.pitch,
     })
   }, [lockedBounds])
 
@@ -383,10 +425,34 @@ export const EthiopiaMapView = (props: Props) => {
         onClick={(info) => {
           if (!info?.object) {
             setSelected(null)
+            setSelectedRegionName(null)
             return
           }
 
           const name = getFeatureName(info.object)
+          setSelectedRegionName(name || null)
+
+          const ll = getFeatureLabelLngLat(info.object)
+          if (ll) {
+            const [longitude, latitude] = ll
+            setViewState((prev) => {
+              const base = prev ?? INITIAL_VIEW_STATE
+              const next = {
+                ...base,
+                longitude,
+                latitude,
+                zoom: Math.max(base.zoom, 6.0),
+                pitch: 48,
+                bearing: 28,
+                transitionDuration: 900,
+                transitionInterpolator: new FlyToInterpolator(),
+                transitionEasing: (t: number) =>
+                  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+              }
+              return clampViewState ? clampViewState(next) : next
+            })
+          }
+
           const value = values[name]
           const title = name || "Region"
           const valueText =
@@ -407,7 +473,7 @@ export const EthiopiaMapView = (props: Props) => {
           attributionControl={false}
           mapStyle={mapStyle as never}
           dragRotate={false}
-          maxPitch={0}
+          maxPitch={60}
         />
       </DeckGL>
 
