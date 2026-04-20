@@ -1,14 +1,9 @@
 import type { Metadata } from "next"
-import { Geist_Mono, Inter_Tight } from "next/font/google"
+import { Inter_Tight } from "next/font/google"
 import "./globals.css"
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
-  subsets: ["latin"],
-})
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 })
 
@@ -25,7 +20,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${interTight.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${interTight.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#0b4b56] text-white">
         {children}
