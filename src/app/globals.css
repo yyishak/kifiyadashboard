@@ -18,3 +18,21 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-track {
+  animation: ticker-scroll var(--ticker-duration, 22s) linear infinite;
+}
+
+.ticker-item {
+  flex: 0 0 auto;
+  padding: 12px 18px;
+}

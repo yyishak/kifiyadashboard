@@ -5,6 +5,7 @@ import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { WebMercatorViewport } from "@deck.gl/core"
 import type { Layer } from "@deck.gl/core"
+import { CollisionFilterExtension } from "@deck.gl/extensions"
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson"
 import Map from "react-map-gl/maplibre"
 
@@ -23,7 +24,7 @@ const INITIAL_VIEW_STATE = {
   zoom: 4.6,
   minZoom: 4.2,
   maxZoom: 8,
-  pitch: 30,
+  pitch: 0,
   bearing: 0,
 }
 
@@ -156,19 +157,32 @@ export const EthiopiaMapView = (props: Props) => {
         if (value == null) return name
         return `${name}\n${formatCompact(value)}`
       },
-      getColor: [8, 35, 41, 255],
+      getColor: [255, 255, 255, 210],
       getSize: 12,
       sizeUnits: "pixels",
       sizeMinPixels: 11,
       sizeMaxPixels: 16,
       getTextAnchor: "middle",
       getAlignmentBaseline: "center",
-      background: true,
-      getBackgroundColor: [255, 255, 255, 245],
-      backgroundPadding: [10, 7],
+      background: false,
       getPixelOffset: [0, -6],
       fontFamily:
         'Inter Tight, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial',
+
+      // Avoid overlapping labels (from deck.gl TextLayer example)
+      collisionEnabled: true,
+      getCollisionPriority: (f: unknown) => {
+        const name = getFeatureName(f)
+        const value = values[name] ?? 0
+        // Prefer showing higher values when space is tight
+        return Math.log10(Math.max(1, value + 1))
+      },
+      collisionTestProps: {
+        sizeScale: 24,
+        sizeMaxPixels: 120,
+        sizeMinPixels: 10,
+      },
+      extensions: [new CollisionFilterExtension()],
     })
 
     return [geoJsonLayer, pillLayer]
@@ -287,6 +301,8 @@ export const EthiopiaMapView = (props: Props) => {
           reuseMaps
           attributionControl={false}
           mapStyle="https://demotiles.maplibre.org/style.json"
+          dragRotate={false}
+          maxPitch={0}
         />
       </DeckGL>
 

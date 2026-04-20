@@ -9,7 +9,8 @@ import { partners } from "@/data/partners"
 import { kpis } from "@/data/kpis"
 import { MapPanelNoSSR } from "@/components/dashboard/MapPanelNoSSR"
 import { partnerRegionValues } from "@/data/partnerRegionValues"
-import frameCollage from "@/logo/Frame 2085661624.png"
+import { ImageTicker } from "@/components/dashboard/ImageTicker"
+import { tickerImages } from "@/1/tickerImages"
 
 const getPartnerId = (partner: Partner): PartnerId => partner.id as PartnerId
 
@@ -90,14 +91,7 @@ export const DashboardClient = () => {
       </section>
 
       <section className="mt-6">
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-          <Image
-            src={frameCollage}
-            alt="MSME collage"
-            className="h-auto w-full box-content"
-            priority
-          />
-        </div>
+        <ImageTicker images={tickerImages} alt="Bottom ticker images" />
       </section>
     </>
   )
