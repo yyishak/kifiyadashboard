@@ -31,7 +31,7 @@ export const DashboardClient = () => {
               key={kpi.label}
               className="rounded-xl border border-white/15 bg-[#02404F] px-4 py-3"
             >
-              <div className="text-2xl font-semibold tracking-tight text-[#f28b2c] md:text-3xl">
+              <div className="text-[28px] font-bold tracking-tight text-[#f28b2c] md:text-3xl">
                 {kpi.value}
               </div>
               <div className="mt-1 text-[10px] font-semibold tracking-wide text-white/70">
