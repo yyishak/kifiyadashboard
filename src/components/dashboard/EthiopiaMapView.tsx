@@ -133,6 +133,7 @@ export const EthiopiaMapView = (props: Props) => {
   const [mapStyle, setMapStyle] = useState<unknown>(MAP_STYLE_URL)
   const [selectedRegionName, setSelectedRegionName] = useState<string | null>(null)
   const [sidebar, setSidebar] = useState<RegionSidebarData | null>(null)
+  const [hoveredRegionName, setHoveredRegionName] = useState<string | null>(null)
 
   const values = useMemo(
     () => props.valuesByRegion ?? {},
@@ -208,6 +209,10 @@ export const EthiopiaMapView = (props: Props) => {
   }
 
   const layers = useMemo((): Layer[] => {
+    const hoveredFeature =
+      hoveredRegionName != null
+        ? (geoJsonData.features ?? []).find((f) => getFeatureName(f) === hoveredRegionName) ?? null
+        : null
     const selectedFeature =
       selectedRegionName != null
         ? (geoJsonData.features ?? []).find((f) => getFeatureName(f) === selectedRegionName) ?? null
@@ -218,7 +223,7 @@ export const EthiopiaMapView = (props: Props) => {
       data: geoJsonData,
       pickable: true,
       stroked: false,
-      filled: false,
+      filled: true,
       lineWidthMinPixels: 1,
       getLineColor: [255, 255, 255, 35],
       getLineWidth: 1,
@@ -230,6 +235,32 @@ export const EthiopiaMapView = (props: Props) => {
       },
       updateTriggers: {
         getFillColor: [stats.max],
+      },
+    })
+
+    const hoverLayer = new GeoJsonLayer({
+      id: "ethiopia-region-hover",
+      data: hoveredFeature
+        ? ({
+            type: "FeatureCollection",
+            features: [hoveredFeature],
+          } as FeatureCollection<Geometry, GeoJsonProperties>)
+        : undefined,
+      pickable: false,
+      stroked: true,
+      filled: true,
+      extruded: false,
+      wireframe: false,
+      opacity: 1,
+      getLineColor: [242, 139, 44, 220],
+      getLineWidth: 2,
+      lineWidthMinPixels: 2,
+      getFillColor: [242, 139, 44, 0],
+      transitions: {
+        getFillColor: { duration: 120 },
+      },
+      updateTriggers: {
+        getFillColor: [hoveredRegionName],
       },
     })
 
@@ -323,8 +354,8 @@ export const EthiopiaMapView = (props: Props) => {
       extensions: [],
     })
 
-    return [geoJsonLayer, highlightLayer, pillLayer]
-  }, [selectedRegionName, stats.max, values])
+    return [geoJsonLayer, hoverLayer, highlightLayer, pillLayer]
+  }, [hoveredRegionName, selectedRegionName, stats.max, values])
 
   const fitBounds = useMemo(() => computeGeoJsonBounds(geoJsonData), [])
 
@@ -407,6 +438,7 @@ export const EthiopiaMapView = (props: Props) => {
           doubleClickZoom: false,
         }}
         layers={layers}
+        getCursor={() => (hoveredRegionName ? "pointer" : "grab")}
         onViewStateChange={(e) => {
           const next = (e.viewState ?? INITIAL_VIEW_STATE) as typeof INITIAL_VIEW_STATE & {
             width?: number
@@ -414,6 +446,10 @@ export const EthiopiaMapView = (props: Props) => {
           }
           const clamped = clampViewState ? clampViewState(next) : next
           setViewState(clamped)
+        }}
+        onHover={(info) => {
+          const name = info?.object ? getFeatureName(info.object) : ""
+          setHoveredRegionName(name || null)
         }}
         onClick={(info) => {
           if (!info?.object) {
