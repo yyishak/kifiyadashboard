@@ -5,10 +5,10 @@ export const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 export const colorRamp = (tRaw: number) => {
   const t = clamp01(tRaw)
 
-  // Deep teal -> orange (dashboard accent), with a mid stop for contrast
-  const c0 = [6, 43, 47]
-  const c1 = [15, 102, 112]
-  const c2 = [242, 139, 44]
+  // Dark -> light green ramp (choropleth)
+  const c0 = [10, 45, 22]    // deep green
+  const c1 = [34, 139, 74]   // mid green
+  const c2 = [170, 240, 200] // light green
 
   const w = t < 0.55 ? t / 0.55 : (t - 0.55) / 0.45
   const from = t < 0.55 ? c0 : c1

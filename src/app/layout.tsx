@@ -22,7 +22,7 @@ export default function RootLayout({
       lang="en"
       className={`${interTight.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#0b4b56] text-white">
+      <body className="min-h-full flex flex-col bg-[#02404F] text-white">
         {children}
       </body>
     </html>

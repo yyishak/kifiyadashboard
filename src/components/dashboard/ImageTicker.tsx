@@ -14,7 +14,7 @@ export const ImageTicker = ({ images, alt, className, speedSeconds = 22 }: Props
   return (
     <div
       className={[
-        "relative w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5",
+        "relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#02404F]",
         className,
       ]
         .filter(Boolean)

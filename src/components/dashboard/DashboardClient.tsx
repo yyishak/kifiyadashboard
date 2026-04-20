@@ -31,7 +31,7 @@ export const DashboardClient = () => {
           {kpis.map((kpi) => (
             <div
               key={kpi.label}
-              className="rounded-xl border border-white/20 bg-white/5 px-4 py-3"
+              className="rounded-xl border border-white/15 bg-[#02404F] px-4 py-3"
             >
               <div className="text-2xl font-semibold tracking-tight text-[#f28b2c] md:text-3xl">
                 {kpi.value}
@@ -52,7 +52,7 @@ export const DashboardClient = () => {
           aria-label="Partner tabs"
           role="tablist"
         >
-          <div className="flex w-max min-w-full items-center justify-between gap-3 py-1 rounded-[48px] border border-black bg-white">
+          <div className="flex w-max min-w-full items-center justify-between gap-3 rounded-[48px] border border-white/15 bg-[#02404F] py-1">
             {partners.map((partner) => {
               const id = getPartnerId(partner)
               const isActive = id === activePartnerId
@@ -68,7 +68,7 @@ export const DashboardClient = () => {
                     "flex h-9 items-center justify-center rounded-lg border px-2 transition",
                     isActive
                       ? "border-white/35 bg-white/10"
-                      : "border-white/0 bg-transparent hover:border-white/15 hover:bg-white/5",
+                      : "border-white/0 bg-transparent hover:border-white/15 hover:bg-white/10",
                   ].join(" ")}
                 >
                   <Image
