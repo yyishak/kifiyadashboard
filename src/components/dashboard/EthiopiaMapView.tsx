@@ -225,13 +225,13 @@ export const EthiopiaMapView = (props: Props) => {
       stroked: false,
       filled: true,
       lineWidthMinPixels: 1,
-      getLineColor: [255, 255, 255, 35],
+      getLineColor: [255, 255, 255, 5],
       getLineWidth: 1,
       getFillColor: (f: unknown) => {
         const name = getFeatureName(f)
         const value = values[name] ?? 0
         const t = stats.max === 0 ? 0 : value / stats.max
-        return colorRamp(t)
+        return [0, 0, 0, 1]
       },
       updateTriggers: {
         getFillColor: [stats.max],
