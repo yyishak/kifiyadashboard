@@ -12,7 +12,6 @@ import Map from "react-map-gl/maplibre"
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { getEthiopiaRegionMeta } from "@/data/ethiopiaRegionMeta"
 import { colorRamp } from "@/lib/colors"
-import { formatCompact } from "@/lib/format"
 import { TooltipCard } from "@/components/dashboard/TooltipCard"
 
 type Props = {
@@ -264,9 +263,18 @@ export const EthiopiaMapView = (props: Props) => {
       },
       getText: (f: unknown) => {
         const name = getFeatureName(f)
+        const meta = name ? getEthiopiaRegionMeta(name) : null
+        const displayName = meta?.name ?? name
+
         const value = values[name]
-        if (typeof value !== "number") return ""
-        return formatCompact(value)
+        if (typeof value !== "number") return displayName
+
+        const formatted = new Intl.NumberFormat("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(value)
+
+        return `${displayName}\n${formatted}`
       },
       getColor: [255, 255, 255, 210],
       getSize: 12,
@@ -425,7 +433,10 @@ export const EthiopiaMapView = (props: Props) => {
           const valueText =
             value == null
               ? "—"
-              : `${formatCompact(value)} (${Math.round((value / Math.max(1, stats.max)) * 100)}%)`
+              : `${new Intl.NumberFormat("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(value)} (${Math.round((value / Math.max(1, stats.max)) * 100)}%)`
 
           setSelected({
             x: info.x ?? 0,
