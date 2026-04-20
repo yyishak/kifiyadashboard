@@ -205,6 +205,14 @@ export const EthiopiaMapView = (props: Props) => {
   const closeSidebar = () => {
     setSidebar(null)
     setSelectedRegionName(null)
+
+    // Reset to the initial "front-facing" camera when closing the modal.
+    setViewState(() => ({
+      ...INITIAL_VIEW_STATE,
+      transitionDuration: 650,
+      transitionInterpolator: new FlyToInterpolator(),
+      transitionEasing: (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+    }))
   }
 
   const layers = useMemo((): Layer[] => {
