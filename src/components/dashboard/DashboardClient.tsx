@@ -9,8 +9,6 @@ import { partners } from "@/data/partners"
 import { kpis } from "@/data/kpis"
 import { MapPanelNoSSR } from "@/components/dashboard/MapPanelNoSSR"
 import { partnerRegionValues } from "@/data/partnerRegionValues"
-import { ImageTicker } from "@/components/dashboard/ImageTicker"
-import { tickerImages } from "@/1/tickerImages"
 
 const getPartnerId = (partner: Partner): PartnerId => partner.id as PartnerId
 
@@ -88,10 +86,6 @@ export const DashboardClient = () => {
 
       <section className="mt-6 -mx-5 md:-mx-8">
         <MapPanelNoSSR valuesByRegion={mapValues} />
-      </section>
-
-      <section className="mt-6">
-        <ImageTicker images={tickerImages} alt="Bottom ticker images" />
       </section>
     </>
   )

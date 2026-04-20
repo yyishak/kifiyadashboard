@@ -14,7 +14,7 @@ export const ImageTicker = ({ images, alt, className, speedSeconds = 22 }: Props
   return (
     <div
       className={[
-        "relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#02404F]",
+        "relative h-[106px] w-full overflow-hidden rounded-2xl border border-white/10 bg-[#02404F]",
         className,
       ]
         .filter(Boolean)
@@ -29,7 +29,7 @@ export const ImageTicker = ({ images, alt, className, speedSeconds = 22 }: Props
               alt={idx === 0 ? alt : ""}
               width={src.width}
               height={src.height}
-              className="h-16 w-auto select-none md:h-20"
+              className="h-[106px] w-auto select-none"
               priority
             />
           </div>
@@ -41,7 +41,7 @@ export const ImageTicker = ({ images, alt, className, speedSeconds = 22 }: Props
               alt=""
               width={src.width}
               height={src.height}
-              className="h-16 w-auto select-none md:h-20"
+              className="h-[106px] w-auto select-none"
               priority
             />
           </div>

@@ -1,6 +1,8 @@
 "use client"
 
 import { EthiopiaMapView } from "@/components/dashboard/EthiopiaMapView"
+import { ImageTicker } from "@/components/dashboard/ImageTicker"
+import { tickerImages } from "@/1/tickerImages"
 
 type Props = {
   valuesByRegion?: Record<string, number>
@@ -23,6 +25,12 @@ export const MapPanel = ({ valuesByRegion }: Props) => {
 
       <div className="h-[520px] md:h-[620px]">
         <EthiopiaMapView valuesByRegion={valuesByRegion} />
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-5 pt-12 md:px-8 md:pt-14">
+        <div className="pointer-events-auto">
+          <ImageTicker images={tickerImages} alt="Map ticker images" className="mx-auto max-w-6xl" />
+        </div>
       </div>
     </div>
   )

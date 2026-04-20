@@ -10,6 +10,7 @@ import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "ge
 import Map from "react-map-gl/maplibre"
 
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
+import { getEthiopiaRegionMeta } from "@/data/ethiopiaRegionMeta"
 import { colorRamp } from "@/lib/colors"
 import { formatCompact } from "@/lib/format"
 import { TooltipCard } from "@/components/dashboard/TooltipCard"
@@ -57,10 +58,19 @@ const getFeatureName = (feature: unknown) => {
 }
 
 const getFeatureLabelLngLat = (feature: unknown): [number, number] | null => {
+  const name = getFeatureName(feature)
+  const meta = name ? getEthiopiaRegionMeta(name) : null
+  if (meta) return [meta.longitude, meta.latitude]
+
   if (typeof feature !== "object" || feature == null) return null
   const f = feature as RegionFeature
   const ll = f.properties?.labelLngLat
-  if (Array.isArray(ll) && ll.length >= 2 && typeof ll[0] === "number" && typeof ll[1] === "number") {
+  if (
+    Array.isArray(ll) &&
+    ll.length >= 2 &&
+    typeof ll[0] === "number" &&
+    typeof ll[1] === "number"
+  ) {
     return [ll[0], ll[1]]
   }
   return null
@@ -203,7 +213,8 @@ export const EthiopiaMapView = (props: Props) => {
             ? new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(raw)
             : "—"
         const [x, y] = viewport.project(ll)
-        return { name, value, x, y }
+        const displayName = getEthiopiaRegionMeta(name)?.name ?? name
+        return { name: displayName, value, x, y }
       })
       .filter(Boolean) as Array<{ name: string; value: string; x: number; y: number }>
   }, [viewState, viewportSize])
@@ -242,9 +253,11 @@ export const EthiopiaMapView = (props: Props) => {
       },
       getText: (f: unknown) => {
         const name = getFeatureName(f)
+        const meta = name ? getEthiopiaRegionMeta(name) : null
+        const displayName = meta?.name ?? name
         const value = values[name]
         if (value == null) return name
-        return `${name}\n${formatCompact(value)}`
+        return `${displayName}\n${formatCompact(value)}`
       },
       getColor: [255, 255, 255, 210],
       getSize: 12,
