@@ -5,7 +5,6 @@ import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { FlyToInterpolator, WebMercatorViewport } from "@deck.gl/core"
 import type { Layer } from "@deck.gl/core"
-import { CollisionFilterExtension } from "@deck.gl/extensions"
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson"
 import Map from "react-map-gl/maplibre"
 
@@ -414,33 +413,21 @@ export const EthiopiaMapView = (props: Props) => {
         return meta?.name ?? name
       },
       getColor: [255, 255, 255, 210],
-      getSize: 12,
+      getSize: 11,
       sizeUnits: "pixels",
-      sizeMinPixels: 11,
-      sizeMaxPixels: 16,
+      sizeMinPixels: 10,
+      sizeMaxPixels: 14,
       getTextAnchor: "middle",
       getAlignmentBaseline: "center",
       background: true,
       getBackgroundColor: [0, 0, 0, 110],
-      backgroundPadding: [10, 7],
+      backgroundPadding: [8, 6],
       getPixelOffset: [0, 8],
       fontFamily:
         'Inter Tight, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial',
 
-      // Avoid overlapping labels (from deck.gl TextLayer example)
-      collisionEnabled: true,
-      getCollisionPriority: (f: unknown) => {
-        const name = getFeatureName(f)
-        const value = values[name] ?? 0
-        // Prefer showing higher values when space is tight
-        return Math.log10(Math.max(1, value + 1))
-      },
-      collisionTestProps: {
-        sizeScale: 24,
-        sizeMaxPixels: 120,
-        sizeMinPixels: 10,
-      },
-      extensions: [new CollisionFilterExtension()],
+      // Always show all labels (even if they overlap).
+      collisionEnabled: false,
     })
 
     const regionValueLayer = new TextLayer({
@@ -458,31 +445,20 @@ export const EthiopiaMapView = (props: Props) => {
         return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)
       },
       getColor: [242, 139, 44, 245],
-      getSize: 14,
+      getSize: 13,
       sizeUnits: "pixels",
-      sizeMinPixels: 13,
-      sizeMaxPixels: 18,
+      sizeMinPixels: 12,
+      sizeMaxPixels: 16,
       fontWeight: 800,
       getTextAnchor: "middle",
       getAlignmentBaseline: "center",
       background: true,
       getBackgroundColor: [0, 0, 0, 110],
-      backgroundPadding: [10, 7],
+      backgroundPadding: [8, 6],
       getPixelOffset: [0, -10],
       fontFamily:
         'Inter Tight, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial',
-      collisionEnabled: true,
-      getCollisionPriority: (f: unknown) => {
-        const name = getFeatureName(f)
-        const value = values[name] ?? 0
-        return Math.log10(Math.max(1, value + 1))
-      },
-      collisionTestProps: {
-        sizeScale: 26,
-        sizeMaxPixels: 140,
-        sizeMinPixels: 10,
-      },
-      extensions: [new CollisionFilterExtension()],
+      collisionEnabled: false,
     })
 
     return [geoJsonLayer, hoverLayer, highlightLayer, regionNameLayer, regionValueLayer]
