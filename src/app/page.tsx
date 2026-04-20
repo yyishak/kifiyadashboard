@@ -8,22 +8,22 @@ export default function Home() {
       <div className="mx-auto w-full max-w-[546px]">
         <header className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
-            <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold tracking-wide text-white/70">
-              <Link href="/kifiya-central" className="hover:text-white">
+            <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold tracking-wide text-[color:var(--muted)]">
+              <Link href="/kifiya-central" className="hover:text-[color:var(--fg)]">
                 Kifiya central
               </Link>
-              <span className="text-white/35">/</span>
-              <Link href="/ceo-dashboard" className="hover:text-white">
+              <span className="text-[color:var(--muted-2)]">/</span>
+              <Link href="/ceo-dashboard" className="hover:text-[color:var(--fg)]">
                 CEO dashboard
               </Link>
             </nav>
 
-            <p className="text-[26px] font-semibold tracking-wide text-white/70">
+            <p className="text-[26px] font-semibold tracking-wide text-[color:var(--muted)]">
               Leveraging AI and Data to unlock
             </p>
             <h1 className="text-balance text-3xl font-semibold tracking-tight md:text-4xl">
-              <span className="text-white">MSME </span>
-              <span className="text-[#f28b2c]">Financing</span>
+              <span className="text-[color:var(--fg)]">MSME </span>
+              <span className="text-[color:var(--accent)]">Financing</span>
             </h1>
           </div>
 

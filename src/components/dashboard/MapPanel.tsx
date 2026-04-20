@@ -16,7 +16,7 @@ export const MapPanel = ({ valuesByRegion }: Props) => {
           <div />
 
           <div className="pointer-events-auto text-right">
-            <div className="text-sm font-semibold tracking-wide text-white/90">
+            <div className="text-sm font-semibold tracking-wide text-[color:var(--fg)]">
               Total MSME&apos;s
             </div>
           </div>

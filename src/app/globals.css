@@ -2,20 +2,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #02404F;
-  --foreground: #ededed;
+  /* Theme tokens (default: dark) */
+  --bg: #02404f;
+  --fg: #ededed;
+  --muted: rgba(255, 255, 255, 0.7);
+  --muted-2: rgba(255, 255, 255, 0.6);
+  --line: rgba(255, 255, 255, 0.2);
+
+  --card: #02404f;
+  --card-border: rgba(255, 255, 255, 0.15);
+  --surface-2: rgba(255, 255, 255, 0.1);
+  --surface-3: rgba(255, 255, 255, 0.15);
+
+  --accent: #f28b2c;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --fg: #0f172a;
+  --muted: rgba(15, 23, 42, 0.7);
+  --muted-2: rgba(15, 23, 42, 0.6);
+  --line: rgba(15, 23, 42, 0.15);
+
+  --card: #ffffff;
+  --card-border: rgba(15, 23, 42, 0.14);
+  --surface-2: rgba(15, 23, 42, 0.06);
+  --surface-3: rgba(15, 23, 42, 0.08);
+
+  --accent: #f28b2c;
+  color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(#02404F);
-  --color-foreground: var(--foreground);
+  --color-foreground: var(--fg);
   --font-sans: var(--font-inter-tight);
   --font-mono: var(--font-inter-tight);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
