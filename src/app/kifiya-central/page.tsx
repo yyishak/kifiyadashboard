@@ -1,5 +1,10 @@
 export default function KifiyaCentralPage() {
-  const cards = [
+  const cards: Array<{
+    kicker: string
+    title: string
+    value: string
+    isTrend?: boolean
+  }> = [
     {
       kicker: "3",
       title: "Total Disbursed Loans Count",
@@ -26,7 +31,7 @@ export default function KifiyaCentralPage() {
       value: "—",
       isTrend: true,
     },
-  ] as const
+  ]
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-10 min-h-[100svh]">
