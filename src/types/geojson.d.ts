@@ -1,5 +1,5 @@
 declare module "*.geojson" {
-  const value: any
+  const value: unknown
   export default value
 }
 

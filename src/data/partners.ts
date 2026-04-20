@@ -1,7 +1,9 @@
+import type { StaticImageData } from "next/image"
+
 export type Partner = {
   id: string
   name: string
-  logo: any
+  logo: StaticImageData
 }
 
 import logo1 from "@/logo/1.png"

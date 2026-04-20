@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { WebMercatorViewport } from "@deck.gl/core"
+import type { Layer } from "@deck.gl/core"
 import { Map } from "react-map-gl/maplibre"
 import maplibregl from "maplibre-gl"
 
@@ -26,22 +27,52 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 }
 
-const getFeatureName = (feature: any) => `${feature?.properties?.name ?? ""}`.trim()
+type RegionFeatureProperties = {
+  name?: unknown
+  labelLngLat?: unknown
+}
+
+type RegionFeature = {
+  properties?: RegionFeatureProperties
+  geometry?: { coordinates?: unknown }
+}
+
+type RegionFeatureCollection = {
+  features?: RegionFeature[]
+}
+
+const geoJsonData = ethiopiaGeoJson as unknown as RegionFeatureCollection
+
+const getFeatureName = (feature: unknown) => {
+  if (typeof feature !== "object" || feature == null) return ""
+  const f = feature as RegionFeature
+  const name = f.properties?.name
+  return `${typeof name === "string" ? name : ""}`.trim()
+}
 
 type LngLatBounds = [[number, number], [number, number]]
 
-const computeGeoJsonBounds = (geojson: any): LngLatBounds | null => {
-  const coords: any[] = []
-  const pushCoords = (c: any) => {
+const computeGeoJsonBounds = (geojson: unknown): LngLatBounds | null => {
+  const coords: Array<[number, number]> = []
+
+  const pushCoords = (c: unknown) => {
     if (!c) return
-    if (typeof c[0] === "number" && typeof c[1] === "number") {
-      coords.push(c)
+    if (
+      Array.isArray(c) &&
+      c.length >= 2 &&
+      typeof c[0] === "number" &&
+      typeof c[1] === "number"
+    ) {
+      coords.push([c[0], c[1]])
       return
     }
-    for (const child of c) pushCoords(child)
+    if (Array.isArray(c)) {
+      for (const child of c) pushCoords(child)
+    }
   }
 
-  const features = geojson?.features ?? []
+  if (typeof geojson !== "object" || geojson == null) return null
+  const features = (geojson as RegionFeatureCollection).features ?? []
   for (const f of features) pushCoords(f?.geometry?.coordinates)
   if (coords.length === 0) return null
 
@@ -50,7 +81,6 @@ const computeGeoJsonBounds = (geojson: any): LngLatBounds | null => {
   let maxLng = -Infinity
   let maxLat = -Infinity
   for (const [lng, lat] of coords) {
-    if (typeof lng !== "number" || typeof lat !== "number") continue
     minLng = Math.min(minLng, lng)
     minLat = Math.min(minLat, lat)
     maxLng = Math.max(maxLng, lng)
@@ -97,17 +127,17 @@ export const EthiopiaMapView = (props: Props) => {
     return { min, max }
   }, [values])
 
-  const layers = useMemo(() => {
+  const layers = useMemo((): Layer[] => {
     const geoJsonLayer = new GeoJsonLayer({
       id: "ethiopia-regions",
-      data: ethiopiaGeoJson as any,
+      data: geoJsonData as unknown,
       pickable: false,
       stroked: true,
       filled: true,
       lineWidthMinPixels: 1,
       getLineColor: [255, 255, 255, 35],
       getLineWidth: 1,
-      getFillColor: (f: any) => {
+      getFillColor: (f: unknown) => {
         const name = getFeatureName(f)
         const value = values[name] ?? 0
         const t = stats.max === 0 ? 0 : value / stats.max
@@ -120,10 +150,16 @@ export const EthiopiaMapView = (props: Props) => {
 
     const pillLayer = new TextLayer({
       id: "ethiopia-pills",
-      data: (ethiopiaGeoJson as any).features,
+      data: geoJsonData.features ?? [],
       pickable: false,
-      getPosition: (f: any) => f?.properties?.labelLngLat ?? [0, 0],
-      getText: (f: any) => {
+      getPosition: (f: unknown) => {
+        const feature = f as RegionFeature
+        const ll = feature?.properties?.labelLngLat
+        return Array.isArray(ll) && ll.length >= 2 && typeof ll[0] === "number" && typeof ll[1] === "number"
+          ? [ll[0], ll[1]]
+          : [0, 0]
+      },
+      getText: (f: unknown) => {
         const name = getFeatureName(f)
         const value = values[name]
         if (value == null) return name
@@ -147,13 +183,13 @@ export const EthiopiaMapView = (props: Props) => {
     return [geoJsonLayer, pillLayer]
   }, [stats.max, values])
 
-  const fitBounds = useMemo(() => computeGeoJsonBounds(ethiopiaGeoJson as any), [])
+  const fitBounds = useMemo(() => computeGeoJsonBounds(geoJsonData), [])
 
   return (
     <div ref={containerRef} className="relative h-full w-full overflow-hidden">
       <DeckGL
         initialViewState={(() => {
-          if (!fitBounds || !viewportSize) return INITIAL_VIEW_STATE as any
+          if (!fitBounds || !viewportSize) return INITIAL_VIEW_STATE
 
           const { longitude, latitude, zoom } = new WebMercatorViewport({
             width: viewportSize.width,
@@ -164,15 +200,18 @@ export const EthiopiaMapView = (props: Props) => {
             ...INITIAL_VIEW_STATE,
             longitude,
             latitude,
-            zoom: Math.min(INITIAL_VIEW_STATE.maxZoom, Math.max(INITIAL_VIEW_STATE.minZoom, zoom)),
-          } as any
+            zoom: Math.min(
+              INITIAL_VIEW_STATE.maxZoom,
+              Math.max(INITIAL_VIEW_STATE.minZoom, zoom)
+            ),
+          }
         })()}
         controller={{ dragPan: true, dragRotate: true, scrollZoom: true }}
-        layers={layers as any}
+        layers={layers}
       >
         <Map
           reuseMaps
-          mapLib={maplibregl as any}
+          mapLib={maplibregl}
           mapStyle={
             props.mapStyle ??
             "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
