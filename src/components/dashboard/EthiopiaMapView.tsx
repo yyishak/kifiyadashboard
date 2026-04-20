@@ -6,6 +6,7 @@ import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { WebMercatorViewport } from "@deck.gl/core"
 import type { Layer } from "@deck.gl/core"
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson"
+import Map from "react-map-gl/maplibre"
 
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { colorRamp } from "@/lib/colors"
@@ -95,30 +96,15 @@ const computeGeoJsonBounds = (geojson: unknown): LngLatBounds | null => {
 
 export const EthiopiaMapView = (props: Props) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(
-    null
-  )
+  const [viewState, setViewState] = useState<
+    (typeof INITIAL_VIEW_STATE & { width?: number; height?: number }) | null
+  >(null)
   const [hovered, setHovered] = useState<{
     x: number
     y: number
     title: string
     value: string
   } | null>(null)
-
-  useEffect(() => {
-    if (!containerRef.current) return
-
-    const el = containerRef.current
-    const ro = new ResizeObserver(() => {
-      const rect = el.getBoundingClientRect()
-      const width = Math.max(1, Math.round(rect.width))
-      const height = Math.max(1, Math.round(rect.height))
-      setViewportSize({ width, height })
-    })
-    ro.observe(el)
-
-    return () => ro.disconnect()
-  }, [])
 
   const values = useMemo(
     () => props.valuesByRegion ?? {},
@@ -190,29 +176,93 @@ export const EthiopiaMapView = (props: Props) => {
 
   const fitBounds = useMemo(() => computeGeoJsonBounds(geoJsonData), [])
 
+  const computeInitialViewState = useMemo(() => {
+    return (width: number, height: number) => {
+      if (!fitBounds) return INITIAL_VIEW_STATE
+
+      const { longitude, latitude, zoom } = new WebMercatorViewport({ width, height }).fitBounds(
+        fitBounds,
+        { padding: 36 }
+      )
+
+      return {
+        ...INITIAL_VIEW_STATE,
+        longitude,
+        latitude,
+        zoom: Math.min(INITIAL_VIEW_STATE.maxZoom, Math.max(INITIAL_VIEW_STATE.minZoom, zoom)),
+      }
+    }
+  }, [fitBounds])
+
+  const lockedBounds = useMemo(() => {
+    if (!fitBounds) return null
+
+    // A little slack so users can pan without immediately "hitting a wall".
+    const slackDeg = 0.35
+    const [[minLng, minLat], [maxLng, maxLat]] = fitBounds
+    return [
+      [minLng - slackDeg, minLat - slackDeg],
+      [maxLng + slackDeg, maxLat + slackDeg],
+    ] satisfies LngLatBounds
+  }, [fitBounds])
+
+  const clampViewState = useMemo(() => {
+    if (!lockedBounds) return null
+
+    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
+    const [[minLng, minLat], [maxLng, maxLat]] = lockedBounds
+
+    return (next: typeof INITIAL_VIEW_STATE & { width?: number; height?: number }) => ({
+      ...next,
+      zoom: clamp(next.zoom, INITIAL_VIEW_STATE.minZoom, INITIAL_VIEW_STATE.maxZoom),
+      longitude: clamp(next.longitude, minLng, maxLng),
+      latitude: clamp(next.latitude, minLat, maxLat),
+      // "Lock" orientation to avoid drifting away from Ethiopia.
+      bearing: 0,
+      pitch: INITIAL_VIEW_STATE.pitch,
+    })
+  }, [lockedBounds])
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const el = containerRef.current
+    const ro = new ResizeObserver(() => {
+      const rect = el.getBoundingClientRect()
+      const width = Math.max(1, Math.round(rect.width))
+      const height = Math.max(1, Math.round(rect.height))
+
+      setViewState((prev) => {
+        if (prev) return prev
+        const next = computeInitialViewState(width, height)
+        return clampViewState ? clampViewState(next) : next
+      })
+    })
+    ro.observe(el)
+
+    return () => ro.disconnect()
+  }, [clampViewState, computeInitialViewState])
+
   return (
     <div ref={containerRef} className="relative h-full w-full overflow-hidden">
       <DeckGL
-        initialViewState={(() => {
-          if (!fitBounds || !viewportSize) return INITIAL_VIEW_STATE
-
-          const { longitude, latitude, zoom } = new WebMercatorViewport({
-            width: viewportSize.width,
-            height: viewportSize.height,
-          }).fitBounds(fitBounds, { padding: 36 })
-
-          return {
-            ...INITIAL_VIEW_STATE,
-            longitude,
-            latitude,
-            zoom: Math.min(
-              INITIAL_VIEW_STATE.maxZoom,
-              Math.max(INITIAL_VIEW_STATE.minZoom, zoom)
-            ),
-          }
-        })()}
-        controller={{ dragPan: true, dragRotate: true, scrollZoom: true }}
+        viewState={viewState ?? INITIAL_VIEW_STATE}
+        controller={{
+          dragPan: true,
+          scrollZoom: true,
+          dragRotate: false,
+          touchRotate: false,
+          doubleClickZoom: false,
+        }}
         layers={layers}
+        onViewStateChange={(e) => {
+          const next = (e.viewState ?? INITIAL_VIEW_STATE) as typeof INITIAL_VIEW_STATE & {
+            width?: number
+            height?: number
+          }
+          const clamped = clampViewState ? clampViewState(next) : next
+          setViewState(clamped)
+        }}
         onHover={(info) => {
           if (!info?.object) {
             setHovered(null)
@@ -233,6 +283,11 @@ export const EthiopiaMapView = (props: Props) => {
           })
         }}
       >
+        <Map
+          reuseMaps
+          attributionControl={false}
+          mapStyle="https://demotiles.maplibre.org/style.json"
+        />
       </DeckGL>
 
       {hovered ? (

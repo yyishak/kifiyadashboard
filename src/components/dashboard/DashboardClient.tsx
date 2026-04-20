@@ -94,7 +94,7 @@ export const DashboardClient = () => {
           <Image
             src={frameCollage}
             alt="MSME collage"
-            className="h-auto w-full"
+            className="h-auto w-full box-content"
             priority
           />
         </div>
