@@ -75,7 +75,7 @@ export const DashboardClient = () => {
                     alt={`${partner.name} logo`}
                     className={[
                       "h-5 w-auto",
-                      isActive ? "opacity-95" : "opacity-75 grayscale-[20%]",
+                      isActive ? "opacity-95" : "opacity-75 grayscale",
                     ].join(" ")}
                   />
                 </button>
