@@ -27,10 +27,8 @@ export const MapPanel = ({ valuesByRegion }: Props) => {
         <EthiopiaMapView valuesByRegion={valuesByRegion} />
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-5 pt-12 md:px-8 md:pt-14">
-        <div className="pointer-events-auto">
-          <ImageTicker images={tickerImages} alt="Map ticker images" className="mx-auto max-w-6xl" />
-        </div>
+      <div className="mt-4 px-5 md:px-8">
+        <ImageTicker images={tickerImages} alt="Map ticker images" className="mx-auto max-w-6xl" />
       </div>
     </div>
   )
