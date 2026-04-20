@@ -14,7 +14,6 @@ import { getEthiopiaRegionMeta } from "@/data/ethiopiaRegionMeta"
 import { colorRamp } from "@/lib/colors"
 import { formatCompact } from "@/lib/format"
 import { TooltipCard } from "@/components/dashboard/TooltipCard"
-import { RegionPin } from "@/components/dashboard/RegionPin"
 
 type Props = {
   valuesByRegion?: Record<string, number>
@@ -190,36 +189,6 @@ export const EthiopiaMapView = (props: Props) => {
     return { min, max }
   }, [values])
 
-  const regionPins = useMemo(() => {
-    if (!viewportSize) return []
-    const vs = viewState ?? INITIAL_VIEW_STATE
-    const viewport = new WebMercatorViewport({
-      width: viewportSize.width,
-      height: viewportSize.height,
-      longitude: vs.longitude,
-      latitude: vs.latitude,
-      zoom: vs.zoom,
-      bearing: 0,
-      pitch: 0,
-    })
-
-    return (geoJsonData.features ?? [])
-      .map((f) => {
-        const name = getFeatureName(f)
-        const ll = getFeatureLabelLngLat(f)
-        if (!name || !ll) return null
-        const raw = values[name]
-        const value =
-          typeof raw === "number"
-            ? new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(raw)
-            : "—"
-        const [x, y] = viewport.project(ll)
-        const displayName = getEthiopiaRegionMeta(name)?.name ?? name
-        return { name: displayName, value, x, y }
-      })
-      .filter(Boolean) as Array<{ name: string; value: string; x: number; y: number }>
-  }, [viewState, viewportSize])
-
   const layers = useMemo((): Layer[] => {
     const selectedFeature =
       selectedRegionName != null
@@ -295,11 +264,9 @@ export const EthiopiaMapView = (props: Props) => {
       },
       getText: (f: unknown) => {
         const name = getFeatureName(f)
-        const meta = name ? getEthiopiaRegionMeta(name) : null
-        const displayName = meta?.name ?? name
         const value = values[name]
-        if (value == null) return name
-        return `${displayName}\n${formatCompact(value)}`
+        if (typeof value !== "number") return ""
+        return formatCompact(value)
       },
       getColor: [255, 255, 255, 210],
       getSize: 12,
@@ -476,22 +443,6 @@ export const EthiopiaMapView = (props: Props) => {
           maxPitch={60}
         />
       </DeckGL>
-
-      {regionPins.map((p) => (
-        <div
-          key={p.name}
-          className="pointer-events-none absolute left-0 top-0 z-20"
-          style={{
-            transform: `translate(${Math.round(p.x - 94)}px, ${Math.round(p.y - 98)}px)`,
-          }}
-        >
-          <RegionPin
-            label={p.name}
-            value={p.value}
-            className="h-[66px] w-[128px] drop-shadow-[0_10px_35px_rgba(0,0,0,0.35)]"
-          />
-        </div>
-      ))}
 
       {selected ? (
         <div
