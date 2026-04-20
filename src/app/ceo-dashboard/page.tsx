@@ -3,7 +3,9 @@ const TopTab = ({ label, active }: { label: string; active?: boolean }) => (
     type="button"
     className={[
       "rounded-full px-3 py-1.5 text-sm font-semibold transition",
-      active ? "bg-white text-slate-900 shadow-sm" : "text-white/80 hover:text-white",
+      active
+        ? "border border-white/20 bg-white/10 text-white shadow-sm"
+        : "text-white/80 hover:bg-white/10 hover:text-white",
     ].join(" ")}
   >
     {label}
@@ -28,16 +30,16 @@ const MetricCard = ({
   value: string
   unit?: string
 }) => (
-  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div className="rounded-xl border border-white/15 bg-[#02404F] p-4">
     <div className="flex items-start justify-between gap-3">
-      <div className="text-[12px] font-semibold text-slate-600">{title}</div>
-      <div className="grid h-6 min-w-6 place-items-center rounded-full bg-amber-50 px-2 text-[11px] font-bold text-amber-700">
+      <div className="text-[12px] font-semibold text-white/70">{title}</div>
+      <div className="grid h-6 min-w-6 place-items-center rounded-full border border-white/15 bg-white/10 px-2 text-[11px] font-bold text-white/85">
         {badge}
       </div>
     </div>
     <div className="mt-2 flex items-baseline gap-2">
-      <div className="text-2xl font-bold tracking-tight text-slate-900">{value}</div>
-      {unit ? <div className="text-sm font-semibold text-slate-500">{unit}</div> : null}
+      <div className="text-2xl font-bold tracking-tight text-[#f28b2c]">{value}</div>
+      {unit ? <div className="text-sm font-semibold text-white/70">{unit}</div> : null}
     </div>
   </div>
 )
@@ -51,25 +53,25 @@ const ChartCard = ({
   subtitle?: string
   heightClass?: string
 }) => (
-  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div className="rounded-xl border border-white/15 bg-[#02404F] p-4">
     <div className="flex items-start justify-between gap-4">
       <div>
-        <div className="text-sm font-bold text-slate-900">{title}</div>
-        {subtitle ? <div className="mt-1 text-xs text-slate-500">{subtitle}</div> : null}
+        <div className="text-sm font-bold text-white/90">{title}</div>
+        {subtitle ? <div className="mt-1 text-xs text-white/60">{subtitle}</div> : null}
       </div>
-      <div className="text-xs font-semibold text-slate-400">Loading…</div>
+      <div className="text-xs font-semibold text-white/60">Loading…</div>
     </div>
     <div
       className={[
-        "mt-4 w-full overflow-hidden rounded-lg border border-slate-100 bg-slate-50",
+        "mt-4 w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]",
         heightClass ?? "h-[220px]",
       ].join(" ")}
     >
       <div className="h-full w-full p-4">
-        <div className="h-full w-full rounded-md bg-gradient-to-b from-slate-100 to-slate-50" />
+        <div className="h-full w-full rounded-md bg-gradient-to-b from-white/10 to-white/[0.02]" />
       </div>
     </div>
-    <div className="mt-2 text-xs text-slate-500">Waiting on Central LoanData</div>
+    <div className="mt-2 text-xs text-white/60">Waiting on Central LoanData</div>
   </div>
 )
 
@@ -95,10 +97,10 @@ export default function CeoDashboardPage() {
   ] as const
 
   return (
-    <div className="min-h-[100svh] bg-slate-50">
-      <div className="mx-auto w-full max-w-[1200px] px-3 py-3 md:px-6 md:py-6">
+    <div className="min-h-[100svh] bg-[#02404F]">
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-10">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr]">
-          <aside className="rounded-xl bg-[#0b3a46] p-4 text-white shadow-sm">
+          <aside className="rounded-xl border border-white/15 bg-[#02404F] p-4 text-white">
             <div className="flex items-center justify-between">
               <div className="text-lg font-bold tracking-tight">Kifiya</div>
               <div className="rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-white/85">
@@ -127,15 +129,15 @@ export default function CeoDashboardPage() {
           </aside>
 
           <main className="space-y-4">
-            <header className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <header className="rounded-xl border border-white/15 bg-[#02404F] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-sm font-semibold text-slate-500">CEO Dashboard</div>
-                  <div className="mt-1 text-xs text-slate-400">
+                  <div className="text-sm font-semibold text-white/80">CEO Dashboard</div>
+                  <div className="mt-1 text-xs text-white/60">
                     Published · Admin User · 11 days ago
                   </div>
                 </div>
-                <div className="text-xs font-semibold text-slate-400">Waiting on Central LoanData</div>
+                <div className="text-xs font-semibold text-white/60">Waiting on Central LoanData</div>
               </div>
             </header>
 
@@ -165,13 +167,13 @@ export default function CeoDashboardPage() {
 
             <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               {bigTiles.map((t) => (
-                <div key={t.title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="text-sm font-semibold text-slate-600">{t.title}</div>
+                <div key={t.title} className="rounded-xl border border-white/15 bg-[#02404F] p-5">
+                  <div className="text-sm font-semibold text-white/70">{t.title}</div>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <div className="text-3xl font-bold tracking-tight text-slate-900">
+                    <div className="text-3xl font-bold tracking-tight text-[#f28b2c]">
                       {t.value}
                     </div>
-                    <div className="text-sm font-semibold text-slate-500">{t.unit}</div>
+                    <div className="text-sm font-semibold text-white/70">{t.unit}</div>
                   </div>
                 </div>
               ))}
