@@ -48,9 +48,100 @@ type RegionSidebarData = {
   key: string
   displayName: string
   capital: string | null
+  geometry: Geometry | null
   value: number | null
   valueText: string
   percentText: string
+}
+
+type GeometryBounds = { minX: number; minY: number; maxX: number; maxY: number }
+
+const computeGeometryBounds = (geometry: Geometry | null): GeometryBounds | null => {
+  if (!geometry) return null
+
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+
+  const push = (pt: unknown) => {
+    if (!Array.isArray(pt) || pt.length < 2) return
+    const x = pt[0]
+    const y = pt[1]
+    if (typeof x !== "number" || typeof y !== "number") return
+    minX = Math.min(minX, x)
+    minY = Math.min(minY, y)
+    maxX = Math.max(maxX, x)
+    maxY = Math.max(maxY, y)
+  }
+
+  const walk = (node: unknown) => {
+    if (!node) return
+    if (Array.isArray(node)) {
+      if (node.length >= 2 && typeof node[0] === "number" && typeof node[1] === "number") {
+        push(node)
+        return
+      }
+      for (const child of node) walk(child)
+    }
+  }
+
+  const coords =
+    geometry && typeof geometry === "object" && "coordinates" in geometry
+      ? (geometry as unknown as { coordinates?: unknown }).coordinates
+      : undefined
+  walk(coords)
+
+  if (!Number.isFinite(minX) || !Number.isFinite(minY)) return null
+  return { minX, minY, maxX, maxY }
+}
+
+const geometryToSvgPath = (geometry: Geometry | null, width: number, height: number, pad = 10): string => {
+  const b = computeGeometryBounds(geometry)
+  if (!geometry || !b) return ""
+
+  const w = Math.max(1, width - pad * 2)
+  const h = Math.max(1, height - pad * 2)
+
+  const dx = Math.max(1e-9, b.maxX - b.minX)
+  const dy = Math.max(1e-9, b.maxY - b.minY)
+  const s = Math.min(w / dx, h / dy)
+
+  const tx = pad + (w - dx * s) / 2
+  const ty = pad + (h - dy * s) / 2
+
+  const project = (pt: number[]) => {
+    const x = tx + (pt[0] - b.minX) * s
+    const y = ty + (b.maxY - pt[1]) * s
+    return [x, y] as const
+  }
+
+  const ringToPath = (ring: number[][]) => {
+    if (ring.length === 0) return ""
+    const [sx, sy] = project(ring[0])
+    let d = `M ${sx.toFixed(2)} ${sy.toFixed(2)}`
+    for (let i = 1; i < ring.length; i++) {
+      const [x, y] = project(ring[i])
+      d += ` L ${x.toFixed(2)} ${y.toFixed(2)}`
+    }
+    d += " Z"
+    return d
+  }
+
+  if (geometry.type === "Polygon") {
+    const coords = (geometry.coordinates ?? []) as number[][][]
+    return coords.map(ringToPath).filter(Boolean).join(" ")
+  }
+
+  if (geometry.type === "MultiPolygon") {
+    const coords = (geometry.coordinates ?? []) as number[][][][]
+    return coords
+      .flatMap((poly) => poly.map(ringToPath))
+      .filter(Boolean)
+      .join(" ")
+  }
+
+  return ""
 }
 
 const geoJsonData = ethiopiaGeoJson as unknown as FeatureCollection<Geometry, GeoJsonProperties>
@@ -548,6 +639,13 @@ export const EthiopiaMapView = (props: Props) => {
             key: name,
             displayName,
             capital,
+            geometry:
+              typeof info.object === "object" &&
+              info.object != null &&
+              "geometry" in (info.object as object)
+                ? (((info.object as unknown as { geometry?: unknown }).geometry ??
+                    null) as Geometry | null)
+                : null,
             value: valueNumber,
             valueText,
             percentText,
@@ -615,6 +713,38 @@ export const EthiopiaMapView = (props: Props) => {
                 >
                   ×
                 </button>
+              </div>
+
+              <div className="px-4 pt-4">
+                <div className="overflow-hidden rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 p-3">
+                  <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                    Region map
+                  </div>
+                  <div className="mt-2">
+                    <svg
+                      viewBox="0 0 320 160"
+                      className="h-[160px] w-full"
+                      aria-label={`${sidebar.displayName} map`}
+                      role="img"
+                    >
+                      <defs>
+                        <linearGradient id="regionFill" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="rgba(242,139,44,0.20)" />
+                          <stop offset="100%" stopColor="rgba(242,139,44,0.05)" />
+                        </linearGradient>
+                      </defs>
+
+                      <rect x="0" y="0" width="320" height="160" fill="rgba(0,0,0,0.12)" />
+                      <path
+                        d={geometryToSvgPath(sidebar.geometry, 320, 160, 14)}
+                        fill="url(#regionFill)"
+                        stroke="rgba(242,139,44,0.95)"
+                        strokeWidth="2"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <div className="p-4">
