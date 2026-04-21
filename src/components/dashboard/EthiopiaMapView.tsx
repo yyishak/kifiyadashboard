@@ -51,9 +51,53 @@ type RegionSidebarData = {
   value: number | null
   valueText: string
   percentText: string
+  maleText: string
+  femaleText: string
+  youthReachedText: string
 }
 
 type GeometryBounds = { minX: number; minY: number; maxX: number; maxY: number }
+
+const formatWholeNumber = (value: number | null): string => {
+  if (value == null) return "—"
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)
+}
+
+const hashStringToUint32 = (input: string): number => {
+  // Small, deterministic hash (FNV-1a-ish) to seed pseudo-random numbers.
+  let hash = 2166136261
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
+}
+
+const mulberry32 = (seed: number) => {
+  return () => {
+    let t = (seed += 0x6d2b79f5)
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+const getRegionRandomBreakdown = (
+  key: string,
+  total: number | null
+): { male: number | null; female: number | null; youth: number | null } => {
+  if (total == null) return { male: null, female: null, youth: null }
+  const rand = mulberry32(hashStringToUint32(key))
+
+  const maleShare = 0.48 + rand() * 0.08 // 48–56%
+  const male = Math.max(0, Math.min(total, Math.round(total * maleShare)))
+  const female = Math.max(0, total - male)
+
+  const youthShare = 0.25 + rand() * 0.15 // 25–40%
+  const youth = Math.max(0, Math.min(total, Math.round(total * youthShare)))
+
+  return { male, female, youth }
+}
 
 const computeGeometryBounds = (geometry: Geometry | null): GeometryBounds | null => {
   if (!geometry) return null
@@ -145,6 +189,21 @@ const geometryToSvgPath = (geometry: Geometry | null, width: number, height: num
 
 const geoJsonData = ethiopiaGeoJson as unknown as FeatureCollection<Geometry, GeoJsonProperties>
 
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+
+const clamp01 = (t: number) => Math.max(0, Math.min(1, t))
+
+const heatColorGreenToRed = (tRaw: number) => {
+  const t = clamp01(tRaw)
+  // Tailwind-ish: green-500 -> red-500
+  const from = { r: 34, g: 197, b: 94 }
+  const to = { r: 239, g: 68, b: 68 }
+  const r = Math.round(lerp(from.r, to.r, t))
+  const g = Math.round(lerp(from.g, to.g, t))
+  const b = Math.round(lerp(from.b, to.b, t))
+  return { r, g, b }
+}
+
 const getFeatureName = (feature: unknown) => {
   if (typeof feature !== "object" || feature == null) return ""
   const f = feature as RegionFeature
@@ -217,6 +276,10 @@ const computeGeoJsonBounds = (geojson: unknown): LngLatBounds | null => {
 
 export const EthiopiaMapView = (props: Props) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const deckRef = useRef<null | { deck?: { pickObject?: (opts: unknown) => unknown } }>(null)
+  const touchDownRef = useRef<{ x: number; y: number; pointerId: number; pointerType: string } | null>(
+    null
+  )
   const [viewState, setViewState] = useState<
     (typeof INITIAL_VIEW_STATE & { width?: number; height?: number }) | null
   >(null)
@@ -292,6 +355,16 @@ export const EthiopiaMapView = (props: Props) => {
     const min = Math.min(...nums, 0)
     return { min, max }
   }, [values])
+
+  const sidebarHeat = useMemo(() => {
+    const value = sidebar?.value
+    const t = value == null ? 0 : stats.max === 0 ? 0 : value / stats.max
+    const { r, g, b } = heatColorGreenToRed(t)
+    return {
+      fill: `rgba(${r}, ${g}, ${b}, 0.32)`,
+      stroke: `rgba(${r}, ${g}, ${b}, 0.95)`,
+    }
+  }, [sidebar?.value, stats.max])
 
   const isSidebarOpen = sidebar != null
 
@@ -533,9 +606,113 @@ export const EthiopiaMapView = (props: Props) => {
     return () => ro.disconnect()
   }, [clampViewState, computeInitialViewState])
 
+  const handlePickRegion = (info: { object?: unknown } | null | undefined) => {
+    if (!info?.object) {
+      closeSidebar()
+      return
+    }
+
+    const name = getFeatureName(info.object)
+    if (!name) {
+      closeSidebar()
+      return
+    }
+
+    setSelectedRegionName(name)
+
+    const ll = getFeatureLabelLngLat(info.object)
+    if (ll) {
+      const [longitude, latitude] = ll
+      setViewState((prev) => {
+        const base = prev ?? INITIAL_VIEW_STATE
+        const next = {
+          ...base,
+          longitude,
+          latitude,
+          zoom: Math.max(base.zoom, 6.0),
+          pitch: 48,
+          bearing: 28,
+          transitionDuration: 900,
+          transitionInterpolator: new FlyToInterpolator(),
+          transitionEasing: (t: number) =>
+            t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+        }
+        return clampViewState ? clampViewState(next) : next
+      })
+    }
+
+    const value = values[name]
+    const meta = getEthiopiaRegionMeta(name)
+    const displayName = meta?.name ?? name
+    const capital = meta?.capital ?? null
+
+    const valueNumber = typeof value === "number" ? value : null
+    const valueText = formatWholeNumber(valueNumber)
+
+    const percentText =
+      valueNumber == null ? "—" : `${Math.round((valueNumber / Math.max(1, stats.max)) * 100)}% of max`
+
+    const breakdown = getRegionRandomBreakdown(name, valueNumber)
+
+    setSidebar({
+      key: name,
+      displayName,
+      capital,
+      geometry:
+        typeof info.object === "object" &&
+        info.object != null &&
+        "geometry" in (info.object as object)
+          ? (((info.object as unknown as { geometry?: unknown }).geometry ?? null) as Geometry | null)
+          : null,
+      value: valueNumber,
+      valueText,
+      percentText,
+      maleText: formatWholeNumber(breakdown.male),
+      femaleText: formatWholeNumber(breakdown.female),
+      youthReachedText: formatWholeNumber(breakdown.youth),
+    })
+  }
+
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-[10px] px-1.5">
+    <div
+      ref={containerRef}
+      className="relative h-full w-full overflow-hidden rounded-[10px] px-1.5"
+      onPointerDown={(e) => {
+        // For mouse/trackpad we rely on DeckGL's onClick, which correctly ignores drags.
+        // This path exists mainly to make touch taps behave exactly like clicks.
+        if (e.pointerType === "mouse") return
+        touchDownRef.current = {
+          x: e.clientX,
+          y: e.clientY,
+          pointerId: e.pointerId,
+          pointerType: e.pointerType,
+        }
+      }}
+      onPointerUp={(e) => {
+        const down = touchDownRef.current
+        touchDownRef.current = null
+        if (!down) return
+        if (e.pointerId !== down.pointerId) return
+        if (down.pointerType === "mouse") return
+
+        const dx = e.clientX - down.x
+        const dy = e.clientY - down.y
+        if (Math.hypot(dx, dy) > 6) return
+
+        const el = containerRef.current
+        const deck = deckRef.current?.deck
+        const pickObject = deck?.pickObject
+        if (!el || typeof pickObject !== "function") return
+
+        const rect = el.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        const pickInfo = pickObject({ x, y, radius: 4 })
+        handlePickRegion(pickInfo as { object?: unknown })
+      }}
+    >
       <DeckGL
+        ref={deckRef as never}
         viewState={viewState ?? INITIAL_VIEW_STATE}
         controller={{
           dragPan: true,
@@ -558,75 +735,7 @@ export const EthiopiaMapView = (props: Props) => {
           const name = info?.object ? getFeatureName(info.object) : ""
           setHoveredRegionName(name || null)
         }}
-        onClick={(info) => {
-          if (!info?.object) {
-            closeSidebar()
-            return
-          }
-
-          const name = getFeatureName(info.object)
-          if (!name) {
-            closeSidebar()
-            return
-          }
-
-          setSelectedRegionName(name)
-
-          const ll = getFeatureLabelLngLat(info.object)
-          if (ll) {
-            const [longitude, latitude] = ll
-            setViewState((prev) => {
-              const base = prev ?? INITIAL_VIEW_STATE
-              const next = {
-                ...base,
-                longitude,
-                latitude,
-                zoom: Math.max(base.zoom, 6.0),
-                pitch: 48,
-                bearing: 28,
-                transitionDuration: 900,
-                transitionInterpolator: new FlyToInterpolator(),
-                transitionEasing: (t: number) =>
-                  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
-              }
-              return clampViewState ? clampViewState(next) : next
-            })
-          }
-
-          const value = values[name]
-          const meta = getEthiopiaRegionMeta(name)
-          const displayName = meta?.name ?? name
-          const capital = meta?.capital ?? null
-
-          const valueNumber = typeof value === "number" ? value : null
-          const valueText =
-            valueNumber == null
-              ? "—"
-              : new Intl.NumberFormat("en-US", {
-                  maximumFractionDigits: 0,
-                }).format(valueNumber)
-
-          const percentText =
-            valueNumber == null
-              ? "—"
-              : `${Math.round((valueNumber / Math.max(1, stats.max)) * 100)}% of max`
-
-          setSidebar({
-            key: name,
-            displayName,
-            capital,
-            geometry:
-              typeof info.object === "object" &&
-              info.object != null &&
-              "geometry" in (info.object as object)
-                ? (((info.object as unknown as { geometry?: unknown }).geometry ??
-                    null) as Geometry | null)
-                : null,
-            value: valueNumber,
-            valueText,
-            percentText,
-          })
-        }}
+        onClick={handlePickRegion}
       >
         <Map
           reuseMaps
@@ -647,7 +756,7 @@ export const EthiopiaMapView = (props: Props) => {
         <button
           type="button"
           className={[
-            "absolute inset-0 bg-black/25 backdrop-blur-sm transition-opacity duration-200",
+            "absolute inset-0 bg-black/25 backdrop-blur-none transition-opacity duration-200",
             isSidebarOpen ? "opacity-100" : "opacity-0",
           ].join(" ")}
           onClick={closeSidebar}
@@ -669,7 +778,7 @@ export const EthiopiaMapView = (props: Props) => {
         >
           {sidebar ? (
             <div className="flex h-full flex-col">
-              <div className="flex items-start justify-between gap-3 border-b border-[color:var(--card-border)] p-4">
+              <div className="flex w-[325px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5">
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
                     {sidebar.displayName}
@@ -691,15 +800,15 @@ export const EthiopiaMapView = (props: Props) => {
                 </button>
               </div>
 
-              <div className="px-4 pt-4">
-                <div className="overflow-hidden rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 p-3">
+              <div className="w-[325px] px-0 pt-0">
+                <div className="relative -mx-px overflow-hidden rounded-none border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 p-3">
                   <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
                     Region map
                   </div>
-                  <div className="mt-2">
+                  <div className="mt-2 overflow-visible">
                     <svg
                       viewBox="0 0 320 160"
-                      className="h-[160px] w-full"
+                      className="h-[170px] w-[calc(100%+24px)] -mx-3"
                       aria-label={`${sidebar.displayName} map`}
                       role="img"
                     >
@@ -710,11 +819,11 @@ export const EthiopiaMapView = (props: Props) => {
                         </linearGradient>
                       </defs>
 
-                      <rect x="0" y="0" width="320" height="160" fill="rgba(0,0,0,0.12)" />
+                      <rect x="0" y="22" width="320" height="116" fill="rgba(0,0,0,0.12)" />
                       <path
                         d={geometryToSvgPath(sidebar.geometry, 320, 160, 14)}
-                        fill="url(#regionFill)"
-                        stroke="rgba(242,139,44,0.95)"
+                        fill={sidebarHeat.fill}
+                        stroke={sidebarHeat.stroke}
                         strokeWidth="2"
                         vectorEffect="non-scaling-stroke"
                       />
@@ -723,7 +832,7 @@ export const EthiopiaMapView = (props: Props) => {
                 </div>
               </div>
 
-              <div className="p-4">
+              <div className="px-[17px] pb-0 pt-0">
                 <div className="text-xs font-semibold tracking-wide text-[color:var(--muted)]">
                   Total MSME&apos;s
                 </div>
@@ -732,6 +841,33 @@ export const EthiopiaMapView = (props: Props) => {
                 </div>
                 <div className="mt-2 text-sm font-medium text-[color:var(--muted)]">
                   {sidebar.percentText}
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                      Male
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-[color:var(--fg)]">
+                      {sidebar.maleText}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                      Female
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-[color:var(--fg)]">
+                      {sidebar.femaleText}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                      Youth reached
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-[color:var(--fg)]">
+                      {sidebar.youthReachedText}
+                    </div>
+                  </div>
                 </div>
               </div>
 
