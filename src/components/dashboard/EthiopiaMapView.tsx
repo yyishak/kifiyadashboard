@@ -857,75 +857,54 @@ export const EthiopiaMapView = (props: Props) => {
                 </div>
               </div>
 
+              <div className="mt-5 w-[325px] px-[17px]">
+                <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                  <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                    Region zone
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-[color:var(--fg)]">
+                    {sidebar.zone ?? "—"}
+                  </div>
+
+                  <div className="mt-3 grid gap-2">
+                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 p-3">
+                      <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                        Total MSME&apos;s
+                      </div>
+                      <div className="mt-1 text-base font-semibold text-[color:var(--accent)]">
+                        {sidebar.valueText}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 p-3">
+                      <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                        Region
+                      </div>
+                      <div className="mt-1 truncate text-sm font-semibold text-[color:var(--fg)]">
+                        {sidebar.displayName}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsZonesPanelOpen(true)}
+                    className="mt-4 w-full rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 px-3 py-2.5 text-left text-xs font-semibold text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]"
+                  >
+                    Zones &amp; sample woredas
+                    <span className="ml-2 text-[11px] font-medium text-[color:var(--muted)]">
+                      View full list
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               <div className="mt-auto border-t border-[color:var(--card-border)] p-4 text-xs text-[color:var(--muted)]">
                 Click another region to update this panel.
               </div>
             </div>
           </aside>
         ) : null}
-
-        <div
-          className={[
-            "absolute right-3 top-3 flex flex-col items-stretch gap-3 pointer-events-auto",
-            "transition-transform duration-250 ease-out will-change-transform",
-            isSidebarOpen ? "translate-x-0" : "translate-x-[calc(100%+24px)]",
-            "md:right-4 md:top-4 md:flex-row md:items-start",
-          ].join(" ")}
-        >
-          <aside
-            className={[
-              "w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] sm:w-[220px]",
-              "bg-[color:var(--card)]/90 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)]",
-              "pointer-events-auto",
-              "block",
-            ].join(" ")}
-            role="dialog"
-            aria-modal="false"
-            aria-label="Region zone"
-          >
-            {sidebar ? (
-              <div className="p-4">
-                <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                  Region zone
-                </div>
-                <div className="mt-1 text-lg font-semibold text-[color:var(--fg)]">
-                  {sidebar.zone ?? "—"}
-                </div>
-
-                <div className="mt-3 grid gap-2">
-                  <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
-                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                      Total MSME&apos;s
-                    </div>
-                    <div className="mt-1 text-base font-semibold text-[color:var(--accent)]">
-                      {sidebar.valueText}
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
-                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                      Region
-                    </div>
-                    <div className="mt-1 truncate text-sm font-semibold text-[color:var(--fg)]">
-                      {sidebar.displayName}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsZonesPanelOpen(true)}
-                  className="mt-4 w-full rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-3 py-2.5 text-left text-xs font-semibold text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]"
-                >
-                  Zones &amp; sample woredas
-                  <span className="ml-2 text-[11px] font-medium text-[color:var(--muted)]">
-                    View full list
-                  </span>
-                </button>
-              </div>
-            ) : null}
-          </aside>
-        </div>
 
         {sidebar && isZonesPanelOpen ? (
           <div className="absolute inset-0 z-40 pointer-events-auto">
