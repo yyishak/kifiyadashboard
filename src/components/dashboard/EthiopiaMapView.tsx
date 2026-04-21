@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import Image from "next/image"
 import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { FlyToInterpolator, WebMercatorViewport } from "@deck.gl/core"
@@ -12,12 +11,6 @@ import Map from "react-map-gl/maplibre"
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { getEthiopiaRegionMeta } from "@/data/ethiopiaRegionMeta"
 import { ethiopiaRegionZonesByKey } from "@/data/ethiopiaRegionZones"
-
-import logoBunna from "@/logo/newlogo/Mask group.png"
-import logoCoop from "@/logo/newlogo/Mask group-1.png"
-import logoZamZam from "@/logo/newlogo/Mask group-2.png"
-import logoWegagen from "@/logo/newlogo/Mask group-3.png"
-import logoHibret from "@/logo/newlogo/Group.png"
 
 type Props = {
   valuesByRegion?: Record<string, number>
@@ -818,32 +811,6 @@ export const EthiopiaMapView = (props: Props) => {
                 >
                   ×
                 </button>
-              </div>
-
-              <div className="h-[182px] px-[17px] pb-0 pt-0">
-                <div className="text-xs font-semibold tracking-wide text-[color:var(--muted)]">
-                  Participating banks
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {[
-                    { src: logoBunna, alt: "Bunna Bank logo" },
-                    { src: logoCoop, alt: "Coop Bank of Oromia logo" },
-                    { src: logoZamZam, alt: "ZamZam Bank logo" },
-                    { src: logoWegagen, alt: "Wegagen Bank logo" },
-                    { src: logoHibret, alt: "Hibret Bank logo" },
-                  ].map((item) => (
-                    <div
-                      key={item.alt}
-                      className="flex h-14 items-center justify-center rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-3"
-                    >
-                      <Image
-                        src={item.src}
-                        alt={item.alt}
-                        className="h-7 w-auto opacity-95"
-                      />
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <div className="mt-4 w-[373px] px-[17px] md:w-full">
