@@ -395,15 +395,15 @@ export const EthiopiaMapView = (props: Props) => {
       id: "ethiopia-regions",
       data: geoJsonData,
       pickable: true,
-      stroked: false,
+      stroked: true,
       filled: true,
       lineWidthMinPixels: 1,
-      getLineColor: [255, 255, 255, 5],
+      getLineColor: [255, 255, 255, 35],
       getLineWidth: 1,
       getFillColor: (f: unknown) => {
         const name = getFeatureName(f)
         void values[name]
-        return [0, 0, 0, 0]
+        return [0, 0, 0, 110]
       },
       updateTriggers: {
         getFillColor: [stats.max],
