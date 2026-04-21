@@ -773,6 +773,92 @@ export const EthiopiaMapView = (props: Props) => {
           aria-hidden
         />
 
+        <aside
+          className={[
+            "h-[calc(100svh-1.5rem)] max-h-[calc(100%-1.5rem)] w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[340px]",
+            "bg-[color:var(--card)]/90 backdrop-blur-xl",
+            "md:h-[calc(100%-2rem)] md:w-[420px]",
+            "pointer-events-auto",
+          ].join(" ")}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Region details"
+        >
+          {sidebar ? (
+            <div className="m-0 flex h-full w-full flex-col items-center justify-center leading-[9px]">
+              <div className="flex w-[325px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
+                    {sidebar.displayName}
+                  </div>
+                  {sidebar.capital ? (
+                    <div className="mt-1 truncate text-xs font-medium text-[color:var(--muted)]">
+                      Capital: {sidebar.capital}
+                    </div>
+                  ) : null}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={closeSidebar}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)] text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="px-[17px] pb-0 pt-0">
+                <div className="text-xs font-semibold tracking-wide text-[color:var(--muted)]">
+                  Total MSME&apos;s
+                </div>
+                <div className="mt-1 flex flex-wrap items-end gap-3">
+                  <div className="min-w-0 text-3xl font-bold tracking-tight text-[color:var(--accent)] sm:mr-auto">
+                    {sidebar.valueText}
+                  </div>
+
+                  <div className="grid shrink-0 grid-cols-2 gap-2">
+                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-2.5 py-2">
+                      <div className="text-[10px] font-semibold tracking-wide text-[color:var(--muted)]">
+                        Male
+                      </div>
+                      <div className="mt-0.5 text-xs font-semibold text-[color:var(--fg)]">
+                        {sidebar.maleText}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-2.5 py-2">
+                      <div className="text-[10px] font-semibold tracking-wide text-[color:var(--muted)]">
+                        Female
+                      </div>
+                      <div className="mt-0.5 text-xs font-semibold text-[color:var(--fg)]">
+                        {sidebar.femaleText}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 text-sm font-medium text-[color:var(--muted)]">
+                  {sidebar.percentText}
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 gap-2">
+                  <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                      Youth reached
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-[color:var(--fg)]">
+                      {sidebar.youthReachedText}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto border-t border-[color:var(--card-border)] p-4 text-xs text-[color:var(--muted)]">
+                Click another region to update this panel.
+              </div>
+            </div>
+          ) : null}
+        </aside>
+
         <div
           className={[
             "absolute right-3 top-3 flex flex-col items-stretch gap-3 pointer-events-auto",
@@ -831,123 +917,6 @@ export const EthiopiaMapView = (props: Props) => {
                     View full list
                   </span>
                 </button>
-              </div>
-            ) : null}
-          </aside>
-
-          <aside
-            className={[
-              "h-[calc(100svh-1.5rem)] max-h-[calc(100%-1.5rem)] w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[340px]",
-              "bg-[color:var(--card)]/90 backdrop-blur-xl",
-              "md:h-[calc(100%-2rem)] md:w-[420px]",
-            ].join(" ")}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Region details"
-          >
-            {sidebar ? (
-              <div className="m-0 flex h-full w-full flex-col items-center justify-center leading-[9px]">
-              <div className="flex w-[325px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5">
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
-                    {sidebar.displayName}
-                  </div>
-                  {sidebar.capital ? (
-                    <div className="mt-1 truncate text-xs font-medium text-[color:var(--muted)]">
-                      Capital: {sidebar.capital}
-                    </div>
-                  ) : null}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={closeSidebar}
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)] text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]"
-                  aria-label="Close"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="w-[325px] px-0 pt-0">
-                <div className="relative -mx-px overflow-hidden rounded-none border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 p-3">
-                  <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                    Region map
-                  </div>
-                  <div className="mt-2 overflow-visible">
-                    <svg
-                      viewBox="0 0 320 160"
-                      className="h-[170px] w-[calc(100%+24px)] -mx-3"
-                      aria-label={`${sidebar.displayName} map`}
-                      role="img"
-                    >
-                      <defs>
-                        <linearGradient id="regionFill" x1="0" y1="0" x2="1" y2="1">
-                          <stop offset="0%" stopColor="rgba(242,139,44,0.20)" />
-                          <stop offset="100%" stopColor="rgba(242,139,44,0.05)" />
-                        </linearGradient>
-                      </defs>
-
-                      <rect x="0" y="22" width="320" height="116" fill="rgba(0,0,0,0.12)" />
-                      <path
-                        d={geometryToSvgPath(sidebar.geometry, 320, 160, 14)}
-                        fill={sidebarHeat.fill}
-                        stroke={sidebarHeat.stroke}
-                        strokeWidth="2"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-[17px] pb-0 pt-0">
-                <div className="text-xs font-semibold tracking-wide text-[color:var(--muted)]">
-                  Total MSME&apos;s
-                </div>
-                <div className="mt-1 flex flex-wrap items-end gap-3">
-                  <div className="min-w-0 text-3xl font-bold tracking-tight text-[color:var(--accent)] sm:mr-auto">
-                    {sidebar.valueText}
-                  </div>
-
-                  <div className="grid shrink-0 grid-cols-2 gap-2">
-                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-2.5 py-2">
-                      <div className="text-[10px] font-semibold tracking-wide text-[color:var(--muted)]">
-                        Male
-                      </div>
-                      <div className="mt-0.5 text-xs font-semibold text-[color:var(--fg)]">
-                        {sidebar.maleText}
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-2.5 py-2">
-                      <div className="text-[10px] font-semibold tracking-wide text-[color:var(--muted)]">
-                        Female
-                      </div>
-                      <div className="mt-0.5 text-xs font-semibold text-[color:var(--fg)]">
-                        {sidebar.femaleText}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-2 text-sm font-medium text-[color:var(--muted)]">
-                  {sidebar.percentText}
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 gap-2">
-                  <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
-                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                      Youth reached
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-[color:var(--fg)]">
-                      {sidebar.youthReachedText}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-auto border-t border-[color:var(--card-border)] p-4 text-xs text-[color:var(--muted)]">
-                Click another region to update this panel.
-              </div>
               </div>
             ) : null}
           </aside>
