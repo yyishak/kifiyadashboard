@@ -7,9 +7,10 @@ import { tickerImages } from "@/1/tickerImages"
 type Props = {
   valuesByRegion?: Record<string, number>
   mapTitle?: string
+  mapTintHex?: string
 }
 
-export const MapPanel = ({ valuesByRegion, mapTitle }: Props) => {
+export const MapPanel = ({ valuesByRegion, mapTitle, mapTintHex }: Props) => {
   return (
     <div className="relative">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
@@ -25,7 +26,7 @@ export const MapPanel = ({ valuesByRegion, mapTitle }: Props) => {
       </div>
 
       <div className="h-[56svh] max-h-[520px] md:h-[62svh] md:max-h-[620px]">
-        <EthiopiaMapView valuesByRegion={valuesByRegion} />
+        <EthiopiaMapView valuesByRegion={valuesByRegion} mapTintHex={mapTintHex} />
       </div>
 
       <div className="mt-4 px-5 md:px-8">

@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default function KifiyaCentralPage() {
   const cards: Array<{
     kicker: string
@@ -37,6 +39,23 @@ export default function KifiyaCentralPage() {
     <main className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-10 min-h-[100svh]">
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
+          <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold tracking-wide text-[color:var(--muted)]">
+            <Link href="/" className="hover:text-[color:var(--fg)]">
+              Main dashboard
+            </Link>
+            <span className="text-[color:var(--muted-2)]">/</span>
+            <Link href="/kifiya-central" className="text-[color:var(--fg)]">
+              Kifiya central
+            </Link>
+            <span className="text-[color:var(--muted-2)]">/</span>
+            <Link href="/ceo-dashboard" className="hover:text-[color:var(--fg)]">
+              CEO dashboard
+            </Link>
+            <span className="text-[color:var(--muted-2)]">/</span>
+            <Link href="/agrifin" className="hover:text-[color:var(--fg)]">
+              Agrifin
+            </Link>
+          </nav>
           <p className="text-[22px] font-semibold tracking-wide text-[color:var(--muted)] md:text-[26px]">
             Additional dashboard
           </p>

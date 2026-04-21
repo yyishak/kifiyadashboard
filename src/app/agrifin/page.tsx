@@ -11,6 +11,10 @@ export default function AgrifinPage() {
         <header className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
             <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold tracking-wide text-[color:var(--muted)]">
+              <Link href="/" className="hover:text-[color:var(--fg)]">
+                Main dashboard
+              </Link>
+              <span className="text-[color:var(--muted-2)]">/</span>
               <Link href="/kifiya-central" className="hover:text-[color:var(--fg)]">
                 Kifiya central
               </Link>
@@ -43,6 +47,7 @@ export default function AgrifinPage() {
         allKpis={agrifinKpis}
         allRegionValues={agrifinRegionValues}
         mapTitle="Total SHF supported across regions"
+        mapTintHex="#0B3B2E"
       />
     </main>
   )

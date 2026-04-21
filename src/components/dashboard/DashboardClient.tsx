@@ -24,6 +24,7 @@ type Props = {
   partnerRegionValues?: Record<PartnerId, Record<string, number>>
   navItems?: NavItem[]
   mapTitle?: string
+  mapTintHex?: string
 }
 
 export const DashboardClient = (props: Props) => {
@@ -149,7 +150,11 @@ export const DashboardClient = (props: Props) => {
       </section>
 
       <section className="mt-6 -mx-5 md:-mx-8">
-        <MapPanelNoSSR valuesByRegion={mapValues} mapTitle={props.mapTitle} />
+        <MapPanelNoSSR
+          valuesByRegion={mapValues}
+          mapTitle={props.mapTitle}
+          mapTintHex={props.mapTintHex}
+        />
       </section>
     </>
   )

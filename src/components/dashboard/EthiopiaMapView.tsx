@@ -14,6 +14,7 @@ import { ethiopiaRegionZonesByKey } from "@/data/ethiopiaRegionZones"
 
 type Props = {
   valuesByRegion?: Record<string, number>
+  mapTintHex?: string
 }
 
 const MAP_STYLE_URL =
@@ -291,6 +292,16 @@ export const EthiopiaMapView = (props: Props) => {
   const [isZonesPanelOpen, setIsZonesPanelOpen] = useState(false)
   const [hoveredRegionName, setHoveredRegionName] = useState<string | null>(null)
 
+  const mapTintHex = (props.mapTintHex ?? MAP_DARK_TINT).trim()
+  const mapTintRgb = useMemo(() => {
+    const hex = mapTintHex.replace("#", "")
+    if (!/^[0-9a-fA-F]{6}$/.test(hex)) return { r: 0, g: 49, b: 61 }
+    const r = parseInt(hex.slice(0, 2), 16)
+    const g = parseInt(hex.slice(2, 4), 16)
+    const b = parseInt(hex.slice(4, 6), 16)
+    return { r, g, b }
+  }, [mapTintHex])
+
   const values = useMemo(
     () => props.valuesByRegion ?? {},
     [props.valuesByRegion]
@@ -302,8 +313,11 @@ export const EthiopiaMapView = (props: Props) => {
     const tint = (value: unknown): unknown => {
       if (typeof value === "string") {
         const v = value.toLowerCase()
-        if (v === "#0e0e0e" || v === "#111" || v === "#000" || v === "#000000") return MAP_DARK_TINT
-        return v.replace(/rgba\(0,\s*0,\s*0,\s*([0-9.]+)\)/g, `rgba(0, 49, 61, $1)`)
+        if (v === "#0e0e0e" || v === "#111" || v === "#000" || v === "#000000") return mapTintHex
+        return v.replace(
+          /rgba\(0,\s*0,\s*0,\s*([0-9.]+)\)/g,
+          `rgba(${mapTintRgb.r}, ${mapTintRgb.g}, ${mapTintRgb.b}, $1)`
+        )
       }
       if (Array.isArray(value)) return value.map(tint)
       if (typeof value === "object" && value != null) {
@@ -329,7 +343,7 @@ export const EthiopiaMapView = (props: Props) => {
                 if (id === "background" && typeof paint === "object" && paint != null) {
                   ;(next as Record<string, unknown>).paint = {
                     ...(paint as Record<string, unknown>),
-                    "background-color": MAP_DARK_TINT,
+                    "background-color": mapTintHex,
                   }
                 }
                 const nextPaint = (next as Record<string, unknown>).paint
@@ -350,7 +364,7 @@ export const EthiopiaMapView = (props: Props) => {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [mapTintHex, mapTintRgb.r, mapTintRgb.g, mapTintRgb.b])
 
   const stats = useMemo(() => {
     const nums = Object.values(values)
