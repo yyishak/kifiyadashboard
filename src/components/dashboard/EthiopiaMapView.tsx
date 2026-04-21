@@ -813,38 +813,6 @@ export const EthiopiaMapView = (props: Props) => {
                 </button>
               </div>
 
-              <div className="w-[325px] px-0 pt-0">
-                <div className="relative -mx-px overflow-hidden rounded-none border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 p-3">
-                  <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                    Region map
-                  </div>
-                  <div className="mt-2 overflow-visible">
-                    <svg
-                      viewBox="0 0 320 160"
-                      className="h-[170px] w-[calc(100%+24px)] -mx-3"
-                      aria-label={`${sidebar.displayName} map`}
-                      role="img"
-                    >
-                      <defs>
-                        <linearGradient id="regionFill" x1="0" y1="0" x2="1" y2="1">
-                          <stop offset="0%" stopColor="rgba(242,139,44,0.20)" />
-                          <stop offset="100%" stopColor="rgba(242,139,44,0.05)" />
-                        </linearGradient>
-                      </defs>
-
-                      <rect x="0" y="22" width="320" height="116" fill="rgba(0,0,0,0.12)" />
-                      <path
-                        d={geometryToSvgPath(sidebar.geometry, 320, 160, 14)}
-                        fill={sidebarHeat.fill}
-                        stroke={sidebarHeat.stroke}
-                        strokeWidth="2"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
               <div className="px-[17px] pb-0 pt-0">
                 <div className="text-xs font-semibold tracking-wide text-[color:var(--muted)]">
                   Total MSME&apos;s
