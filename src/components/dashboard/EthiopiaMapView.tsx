@@ -10,6 +10,7 @@ import Map from "react-map-gl/maplibre"
 
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { getEthiopiaRegionMeta } from "@/data/ethiopiaRegionMeta"
+import { ethiopiaRegionZonesByKey } from "@/data/ethiopiaRegionZones"
 
 type Props = {
   valuesByRegion?: Record<string, number>
@@ -46,6 +47,7 @@ type RegionFeatureCollection = {
 type RegionSidebarData = {
   key: string
   displayName: string
+  zone: string | null
   capital: string | null
   geometry: Geometry | null
   value: number | null
@@ -402,11 +404,14 @@ export const EthiopiaMapView = (props: Props) => {
       getLineWidth: 1,
       getFillColor: (f: unknown) => {
         const name = getFeatureName(f)
-        void values[name]
-        return [0, 0, 0, 110]
+        const value = values[name]
+        if (typeof value !== "number" || !Number.isFinite(value)) return [120, 140, 150, 70]
+        const t = stats.max === 0 ? 0 : value / stats.max
+        const { r, g, b } = heatColorGreenToRed(t)
+        return [r, g, b, 155]
       },
       updateTriggers: {
-        getFillColor: [stats.max],
+        getFillColor: [stats.max, values],
       },
     })
 
@@ -630,7 +635,7 @@ export const EthiopiaMapView = (props: Props) => {
           longitude,
           latitude,
           zoom: Math.max(base.zoom, 6.0),
-          pitch: 48,
+          pitch: 68,
           bearing: 28,
           transitionDuration: 900,
           transitionInterpolator: new FlyToInterpolator(),
@@ -645,6 +650,7 @@ export const EthiopiaMapView = (props: Props) => {
     const meta = getEthiopiaRegionMeta(name)
     const displayName = meta?.name ?? name
     const capital = meta?.capital ?? null
+    const zone = meta?.zone ?? null
 
     const valueNumber = typeof value === "number" ? value : null
     const valueText = formatWholeNumber(valueNumber)
@@ -657,6 +663,7 @@ export const EthiopiaMapView = (props: Props) => {
     setSidebar({
       key: name,
       displayName,
+      zone,
       capital,
       geometry:
         typeof info.object === "object" &&
@@ -764,20 +771,107 @@ export const EthiopiaMapView = (props: Props) => {
           tabIndex={isSidebarOpen ? 0 : -1}
         />
 
-        <aside
+        <div
           className={[
-            "absolute right-3 top-3 h-[calc(100%-1.5rem)] w-[340px] max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)]",
-            "bg-[color:var(--card)]/90 backdrop-blur-xl",
+            "absolute right-3 top-3 flex flex-col items-stretch gap-3",
             "transition-transform duration-250 ease-out will-change-transform",
             isSidebarOpen ? "translate-x-0" : "translate-x-[calc(100%+24px)]",
-            "md:right-4 md:top-4 md:h-[calc(100%-2rem)] md:w-[420px]",
+            "md:right-4 md:top-4 md:flex-row md:items-start",
           ].join(" ")}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Region details"
         >
-          {sidebar ? (
-            <div className="flex h-full flex-col">
+          <aside
+            className={[
+              "w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] sm:w-[220px]",
+              "bg-[color:var(--card)]/90 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)]",
+              "pointer-events-auto",
+              "block",
+            ].join(" ")}
+            role="dialog"
+            aria-modal="false"
+            aria-label="Region zone"
+          >
+            {sidebar ? (
+              <div className="p-4">
+                <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                  Region zone
+                </div>
+                <div className="mt-1 text-lg font-semibold text-[color:var(--fg)]">
+                  {sidebar.zone ?? "—"}
+                </div>
+
+                <div className="mt-3 grid gap-2">
+                  <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                      Total MSME&apos;s
+                    </div>
+                    <div className="mt-1 text-base font-semibold text-[color:var(--accent)]">
+                      {sidebar.valueText}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                      Region
+                    </div>
+                    <div className="mt-1 truncate text-sm font-semibold text-[color:var(--fg)]">
+                      {sidebar.displayName}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                    Zones & sample woredas
+                  </div>
+
+                  <div className="mt-2 max-h-[45vh] space-y-2 overflow-auto pr-1">
+                    {(ethiopiaRegionZonesByKey[sidebar.key] ?? []).length === 0 ? (
+                      <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                        <div className="text-xs font-medium text-[color:var(--muted)]">No zone list yet.</div>
+                      </div>
+                    ) : (
+                      (ethiopiaRegionZonesByKey[sidebar.key] ?? []).map((group) => (
+                        <div
+                          key={group.label}
+                          className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3"
+                        >
+                          <div className="text-xs font-semibold text-[color:var(--fg)]">{group.label}</div>
+                          <div className="mt-2 grid gap-1.5">
+                            {group.items.map((woreda) => (
+                              <div
+                                key={woreda}
+                                className="flex items-center justify-between gap-3 rounded-lg border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 px-2.5 py-2"
+                              >
+                                <div className="min-w-0 truncate text-[11px] font-medium leading-5 text-[color:var(--muted)]">
+                                  {woreda}
+                                </div>
+                                <div className="shrink-0 rounded-md border border-[color:var(--card-border)] bg-[color:var(--surface-2)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--fg)]">
+                                  100,000
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </aside>
+
+          <aside
+            className={[
+              "h-[calc(100svh-1.5rem)] max-h-[calc(100%-1.5rem)] w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[340px]",
+              "bg-[color:var(--card)]/90 backdrop-blur-xl",
+              "md:h-[calc(100%-2rem)] md:w-[420px]",
+            ].join(" ")}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Region details"
+          >
+            {sidebar ? (
+              <div className="m-0 flex h-full w-full flex-col items-center justify-center leading-[9px]">
               <div className="flex w-[325px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5">
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
@@ -874,9 +968,10 @@ export const EthiopiaMapView = (props: Props) => {
               <div className="mt-auto border-t border-[color:var(--card-border)] p-4 text-xs text-[color:var(--muted)]">
                 Click another region to update this panel.
               </div>
-            </div>
-          ) : null}
-        </aside>
+              </div>
+            ) : null}
+          </aside>
+        </div>
       </div>
     </div>
   )
