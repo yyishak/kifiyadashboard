@@ -781,7 +781,7 @@ export const EthiopiaMapView = (props: Props) => {
       >
         <div
           className={[
-            "absolute inset-0 bg-black/25 backdrop-blur-none transition-opacity duration-200",
+            "absolute inset-0 bg-black/0 backdrop-blur-none transition-opacity duration-200",
             isSidebarOpen ? "opacity-100" : "opacity-0",
           ].join(" ")}
           aria-hidden
@@ -881,7 +881,7 @@ export const EthiopiaMapView = (props: Props) => {
           <div className="absolute inset-0 z-40 pointer-events-auto">
             <button
               type="button"
-              className="absolute inset-0 bg-black/35 backdrop-blur-[1px]"
+              className="absolute inset-0 bg-transparent"
               onClick={() => setIsZonesPanelOpen(false)}
               aria-label="Close zones list"
             />
