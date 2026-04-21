@@ -782,7 +782,7 @@ export const EthiopiaMapView = (props: Props) => {
               // Drawer-ish sizing: card height with internal scroll (avoid full-screen).
               "h-auto max-h-[min(72svh,560px)] w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[340px]",
               "bg-[color:var(--card)]/90 backdrop-blur-xl",
-              "md:right-4 md:top-4 md:max-h-[min(72svh,620px)] md:w-[420px]",
+              "md:right-4 md:top-4 md:max-h-[min(72svh,620px)] md:w-[377px]",
               "transition-transform duration-250 ease-out will-change-transform",
               isSidebarOpen ? "translate-x-0" : "translate-x-[calc(100%+24px)]",
               isSidebarOpen ? "pointer-events-auto" : "pointer-events-none",
@@ -791,8 +791,8 @@ export const EthiopiaMapView = (props: Props) => {
             aria-modal="true"
             aria-label="Region details"
           >
-            <div className="m-0 flex h-full w-full flex-col items-center justify-center overflow-y-auto leading-[9px] md:items-stretch">
-              <div className="flex w-[373px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5 md:w-full">
+            <div className="m-0 flex h-full w-full max-w-[387px] flex-col items-end justify-center overflow-y-auto leading-[9px] md:items-stretch md:max-w-none">
+              <div className="flex w-full items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5">
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
                     {sidebar.displayName}
@@ -814,7 +814,7 @@ export const EthiopiaMapView = (props: Props) => {
                 </button>
               </div>
 
-              <div className="mt-4 w-[373px] px-[17px] md:w-full">
+              <div className="mt-4 w-full px-[17px]">
                 <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
                   <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
                     Region zone
