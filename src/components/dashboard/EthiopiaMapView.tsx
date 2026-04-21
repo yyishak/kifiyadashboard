@@ -288,6 +288,7 @@ export const EthiopiaMapView = (props: Props) => {
   const [mapStyle, setMapStyle] = useState<unknown>(MAP_STYLE_URL)
   const [selectedRegionName, setSelectedRegionName] = useState<string | null>(null)
   const [sidebar, setSidebar] = useState<RegionSidebarData | null>(null)
+  const [isZonesPanelOpen, setIsZonesPanelOpen] = useState(false)
   const [hoveredRegionName, setHoveredRegionName] = useState<string | null>(null)
 
   const values = useMemo(
@@ -373,6 +374,7 @@ export const EthiopiaMapView = (props: Props) => {
   const closeSidebar = () => {
     setSidebar(null)
     setSelectedRegionName(null)
+    setIsZonesPanelOpen(false)
 
     // Reset to the initial "front-facing" camera when closing the modal.
     setViewState(() => ({
@@ -819,43 +821,16 @@ export const EthiopiaMapView = (props: Props) => {
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                    Zones & sample woredas
-                  </div>
-
-                  <div className="mt-2 max-h-[45vh] space-y-2 overflow-auto pr-1">
-                    {(ethiopiaRegionZonesByKey[sidebar.key] ?? []).length === 0 ? (
-                      <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
-                        <div className="text-xs font-medium text-[color:var(--muted)]">No zone list yet.</div>
-                      </div>
-                    ) : (
-                      (ethiopiaRegionZonesByKey[sidebar.key] ?? []).map((group) => (
-                        <div
-                          key={group.label}
-                          className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3"
-                        >
-                          <div className="text-xs font-semibold text-[color:var(--fg)]">{group.label}</div>
-                          <div className="mt-2 grid gap-1.5">
-                            {group.items.map((woreda) => (
-                              <div
-                                key={woreda}
-                                className="flex items-center justify-between gap-3 rounded-lg border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 px-2.5 py-2"
-                              >
-                                <div className="min-w-0 truncate text-[11px] font-medium leading-5 text-[color:var(--muted)]">
-                                  {woreda}
-                                </div>
-                                <div className="shrink-0 rounded-md border border-[color:var(--card-border)] bg-[color:var(--surface-2)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--fg)]">
-                                  100,000
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsZonesPanelOpen(true)}
+                  className="mt-4 w-full rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-3 py-2.5 text-left text-xs font-semibold text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]"
+                >
+                  Zones &amp; sample woredas
+                  <span className="ml-2 text-[11px] font-medium text-[color:var(--muted)]">
+                    View full list
+                  </span>
+                </button>
               </div>
             ) : null}
           </aside>
@@ -930,30 +905,35 @@ export const EthiopiaMapView = (props: Props) => {
                 <div className="text-xs font-semibold tracking-wide text-[color:var(--muted)]">
                   Total MSME&apos;s
                 </div>
-                <div className="mt-1 text-3xl font-bold tracking-tight text-[color:var(--accent)]">
-                  {sidebar.valueText}
+                <div className="mt-1 flex flex-wrap items-end gap-3">
+                  <div className="min-w-0 text-3xl font-bold tracking-tight text-[color:var(--accent)] sm:mr-auto">
+                    {sidebar.valueText}
+                  </div>
+
+                  <div className="grid shrink-0 grid-cols-2 gap-2">
+                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-2.5 py-2">
+                      <div className="text-[10px] font-semibold tracking-wide text-[color:var(--muted)]">
+                        Male
+                      </div>
+                      <div className="mt-0.5 text-xs font-semibold text-[color:var(--fg)]">
+                        {sidebar.maleText}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-2.5 py-2">
+                      <div className="text-[10px] font-semibold tracking-wide text-[color:var(--muted)]">
+                        Female
+                      </div>
+                      <div className="mt-0.5 text-xs font-semibold text-[color:var(--fg)]">
+                        {sidebar.femaleText}
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="mt-2 text-sm font-medium text-[color:var(--muted)]">
                   {sidebar.percentText}
                 </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
-                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                      Male
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-[color:var(--fg)]">
-                      {sidebar.maleText}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
-                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                      Female
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-[color:var(--fg)]">
-                      {sidebar.femaleText}
-                    </div>
-                  </div>
+                <div className="mt-4 grid grid-cols-1 gap-2">
                   <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
                     <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
                       Youth reached
@@ -972,6 +952,83 @@ export const EthiopiaMapView = (props: Props) => {
             ) : null}
           </aside>
         </div>
+
+        {sidebar && isZonesPanelOpen ? (
+          <div className="absolute inset-0 z-40 pointer-events-auto">
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/35 backdrop-blur-[1px]"
+              onClick={() => setIsZonesPanelOpen(false)}
+              aria-label="Close zones list"
+            />
+
+            <aside
+              className={[
+                "absolute inset-x-3 bottom-3 top-16 overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)]",
+                "bg-[color:var(--card)]/95 backdrop-blur-xl",
+                "md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(80vh,760px)] md:w-[min(92vw,720px)] md:-translate-x-1/2 md:-translate-y-1/2",
+              ].join(" ")}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Zones & sample woredas"
+            >
+              <div className="flex h-full flex-col">
+                <div className="flex items-start justify-between gap-3 border-b border-[color:var(--card-border)] px-4 py-3.5">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
+                      Zones &amp; sample woredas
+                    </div>
+                    <div className="mt-1 truncate text-xs font-medium text-[color:var(--muted)]">
+                      {sidebar.displayName}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsZonesPanelOpen(false)}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)] text-[color:var(--fg)] transition hover:bg-[color:var(--surface-3)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]"
+                    aria-label="Close"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-auto p-4">
+                  {(ethiopiaRegionZonesByKey[sidebar.key] ?? []).length === 0 ? (
+                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
+                      <div className="text-xs font-medium text-[color:var(--muted)]">No zone list yet.</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {(ethiopiaRegionZonesByKey[sidebar.key] ?? []).map((group) => (
+                        <div
+                          key={group.label}
+                          className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3"
+                        >
+                          <div className="text-xs font-semibold text-[color:var(--fg)]">{group.label}</div>
+                          <div className="mt-2 grid gap-1">
+                            {group.items.map((woreda) => (
+                              <div
+                                key={woreda}
+                                className="flex items-center justify-between gap-3 rounded-lg border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 px-2.5 py-2"
+                              >
+                                <div className="min-w-0 truncate text-[11px] font-medium leading-4 text-[color:var(--muted)]">
+                                  {woreda}
+                                </div>
+                                <div className="shrink-0 rounded-md border border-[color:var(--card-border)] bg-[color:var(--surface-2)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--fg)]">
+                                  100,000
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </aside>
+          </div>
+        ) : null}
       </div>
     </div>
   )
