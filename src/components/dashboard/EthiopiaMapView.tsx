@@ -719,6 +719,9 @@ export const EthiopiaMapView = (props: Props) => {
         const pickInfo = pickObject({ x, y, radius: 4 })
         handlePickRegion(pickInfo as { object?: unknown })
       }}
+      onPointerCancel={() => {
+        touchDownRef.current = null
+      }}
     >
       <DeckGL
         ref={deckRef as never}
@@ -757,25 +760,22 @@ export const EthiopiaMapView = (props: Props) => {
 
       <div
         className={[
-          "absolute inset-0 z-30 transition",
-          isSidebarOpen ? "pointer-events-auto" : "pointer-events-none",
+          // Don't block map interactions; only the panels themselves should capture input.
+          "absolute inset-0 z-30 transition pointer-events-none",
         ].join(" ")}
         aria-hidden={!isSidebarOpen}
       >
-        <button
-          type="button"
+        <div
           className={[
             "absolute inset-0 bg-black/25 backdrop-blur-none transition-opacity duration-200",
             isSidebarOpen ? "opacity-100" : "opacity-0",
           ].join(" ")}
-          onClick={closeSidebar}
-          aria-label="Close region details"
-          tabIndex={isSidebarOpen ? 0 : -1}
+          aria-hidden
         />
 
         <div
           className={[
-            "absolute right-3 top-3 flex flex-col items-stretch gap-3",
+            "absolute right-3 top-3 flex flex-col items-stretch gap-3 pointer-events-auto",
             "transition-transform duration-250 ease-out will-change-transform",
             isSidebarOpen ? "translate-x-0" : "translate-x-[calc(100%+24px)]",
             "md:right-4 md:top-4 md:flex-row md:items-start",
@@ -964,9 +964,10 @@ export const EthiopiaMapView = (props: Props) => {
 
             <aside
               className={[
-                "absolute inset-x-3 bottom-3 top-16 overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)]",
+                // Portrait-friendly sizing (9:16-ish): fill most of the screen without clipping.
+                "absolute inset-x-3 bottom-3 top-3 overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)]",
                 "bg-[color:var(--card)]/95 backdrop-blur-xl",
-                "md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(80vh,760px)] md:w-[min(92vw,720px)] md:-translate-x-1/2 md:-translate-y-1/2",
+                "md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(calc(100svh-2.5rem),760px)] md:w-[min(92vw,720px)] md:-translate-x-1/2 md:-translate-y-1/2",
               ].join(" ")}
               role="dialog"
               aria-modal="true"
