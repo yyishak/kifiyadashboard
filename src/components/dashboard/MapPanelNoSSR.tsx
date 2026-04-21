@@ -4,6 +4,7 @@ import dynamic from "next/dynamic"
 
 type Props = {
   valuesByRegion?: Record<string, number>
+  mapTitle?: string
 }
 
 const MapPanelInner = dynamic(

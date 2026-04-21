@@ -6,9 +6,10 @@ import { tickerImages } from "@/1/tickerImages"
 
 type Props = {
   valuesByRegion?: Record<string, number>
+  mapTitle?: string
 }
 
-export const MapPanel = ({ valuesByRegion }: Props) => {
+export const MapPanel = ({ valuesByRegion, mapTitle }: Props) => {
   return (
     <div className="relative">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
@@ -17,7 +18,7 @@ export const MapPanel = ({ valuesByRegion }: Props) => {
 
           <div className="pointer-events-auto text-right">
             <div className="text-sm font-semibold tracking-wide text-[color:var(--fg)]">
-              Total MSME&apos;s
+              {mapTitle ?? "Total MSME's"}
             </div>
           </div>
         </div>

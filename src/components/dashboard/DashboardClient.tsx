@@ -7,6 +7,7 @@ import Link from "next/link"
 import type { Partner } from "@/data/partners"
 import type { PartnerId } from "@/data/partnerKpis"
 import { partners } from "@/data/partners"
+import type { Kpi } from "@/data/kpis"
 import { allKpis, kpis } from "@/data/kpis"
 import { MapPanelNoSSR } from "@/components/dashboard/MapPanelNoSSR"
 import { partnerRegionValues } from "@/data/partnerRegionValues"
@@ -14,20 +15,45 @@ import { regionValues } from "@/data/regionValues"
 
 const getPartnerId = (partner: Partner): PartnerId => partner.id as PartnerId
 
-export const DashboardClient = () => {
+type NavItem = { href: string; label: string }
+
+type Props = {
+  allKpis?: Kpi[]
+  partnerKpis?: Kpi[]
+  allRegionValues?: Record<string, number>
+  partnerRegionValues?: Record<PartnerId, Record<string, number>>
+  navItems?: NavItem[]
+  mapTitle?: string
+}
+
+export const DashboardClient = (props: Props) => {
+  const navItems =
+    props.navItems ??
+    ([
+      { href: "/", label: "Main" },
+      { href: "/kifiya-central", label: "Kifiya central" },
+      { href: "/ceo-dashboard", label: "CEO dashboard" },
+      { href: "/agrifin", label: "Agrifin" },
+    ] as const)
+
   const [activePartnerId, setActivePartnerId] = useState<PartnerId | "all">("all")
 
   const mapValues = useMemo(
     () =>
       activePartnerId === "all"
-        ? regionValues
-        : partnerRegionValues[activePartnerId] ?? partnerRegionValues.partner_1,
-    [activePartnerId]
+        ? props.allRegionValues ?? regionValues
+        : props.partnerRegionValues?.[activePartnerId] ??
+          partnerRegionValues[activePartnerId] ??
+          partnerRegionValues.partner_1,
+    [activePartnerId, props.allRegionValues, props.partnerRegionValues]
   )
 
   const activeKpis = useMemo(
-    () => (activePartnerId === "all" ? allKpis : kpis),
-    [activePartnerId]
+    () =>
+      activePartnerId === "all"
+        ? props.allKpis ?? allKpis
+        : props.partnerKpis ?? kpis,
+    [activePartnerId, props.allKpis, props.partnerKpis]
   )
 
   return (
@@ -56,11 +82,7 @@ export const DashboardClient = () => {
 
       <section className="mt-3">
         <nav className="mb-3 flex flex-wrap items-center gap-2">
-          {[
-            { href: "/", label: "Main" },
-            { href: "/kifiya-central", label: "Kifiya central" },
-            { href: "/ceo-dashboard", label: "CEO dashboard" },
-          ].map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -127,7 +149,7 @@ export const DashboardClient = () => {
       </section>
 
       <section className="mt-6 -mx-5 md:-mx-8">
-        <MapPanelNoSSR valuesByRegion={mapValues} />
+        <MapPanelNoSSR valuesByRegion={mapValues} mapTitle={props.mapTitle} />
       </section>
     </>
   )
