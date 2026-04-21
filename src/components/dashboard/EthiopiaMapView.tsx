@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import Image from "next/image"
 import DeckGL from "@deck.gl/react"
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers"
 import { FlyToInterpolator, WebMercatorViewport } from "@deck.gl/core"
@@ -11,6 +12,12 @@ import Map from "react-map-gl/maplibre"
 import ethiopiaGeoJson from "@/data/ethiopiaRegions.json"
 import { getEthiopiaRegionMeta } from "@/data/ethiopiaRegionMeta"
 import { ethiopiaRegionZonesByKey } from "@/data/ethiopiaRegionZones"
+
+import logoBunna from "@/logo/newlogo/Mask group.png"
+import logoCoop from "@/logo/newlogo/Mask group-1.png"
+import logoZamZam from "@/logo/newlogo/Mask group-2.png"
+import logoWegagen from "@/logo/newlogo/Mask group-3.png"
+import logoHibret from "@/logo/newlogo/Group.png"
 
 type Props = {
   valuesByRegion?: Record<string, number>
@@ -790,8 +797,8 @@ export const EthiopiaMapView = (props: Props) => {
             aria-modal="true"
             aria-label="Region details"
           >
-            <div className="m-0 flex h-full w-full flex-col items-center justify-center leading-[9px]">
-              <div className="flex w-[325px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5">
+            <div className="m-0 flex h-full w-full flex-col items-center justify-center leading-[9px] md:items-stretch">
+              <div className="flex w-[373px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5 md:w-full">
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
                     {sidebar.displayName}
@@ -813,51 +820,33 @@ export const EthiopiaMapView = (props: Props) => {
                 </button>
               </div>
 
-              <div className="px-[17px] pb-0 pt-0">
+              <div className="h-[182px] px-[17px] pb-0 pt-0">
                 <div className="text-xs font-semibold tracking-wide text-[color:var(--muted)]">
-                  Total MSME&apos;s
+                  Participating banks
                 </div>
-                <div className="mt-1 flex flex-wrap items-end gap-3">
-                  <div className="min-w-0 text-3xl font-bold tracking-tight text-[color:var(--accent)] sm:mr-auto">
-                    {sidebar.valueText}
-                  </div>
-
-                  <div className="grid shrink-0 grid-cols-2 gap-2">
-                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-2.5 py-2">
-                      <div className="text-[10px] font-semibold tracking-wide text-[color:var(--muted)]">
-                        Male
-                      </div>
-                      <div className="mt-0.5 text-xs font-semibold text-[color:var(--fg)]">
-                        {sidebar.maleText}
-                      </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {[
+                    { src: logoBunna, alt: "Bunna Bank logo" },
+                    { src: logoCoop, alt: "Coop Bank of Oromia logo" },
+                    { src: logoZamZam, alt: "ZamZam Bank logo" },
+                    { src: logoWegagen, alt: "Wegagen Bank logo" },
+                    { src: logoHibret, alt: "Hibret Bank logo" },
+                  ].map((item) => (
+                    <div
+                      key={item.alt}
+                      className="flex h-14 items-center justify-center rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-3"
+                    >
+                      <Image
+                        src={item.src}
+                        alt={item.alt}
+                        className="h-7 w-auto opacity-95"
+                      />
                     </div>
-                    <div className="rounded-xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 px-2.5 py-2">
-                      <div className="text-[10px] font-semibold tracking-wide text-[color:var(--muted)]">
-                        Female
-                      </div>
-                      <div className="mt-0.5 text-xs font-semibold text-[color:var(--fg)]">
-                        {sidebar.femaleText}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-2 text-sm font-medium text-[color:var(--muted)]">
-                  {sidebar.percentText}
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 gap-2">
-                  <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
-                    <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
-                      Youth reached
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-[color:var(--fg)]">
-                      {sidebar.youthReachedText}
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="mt-5 w-[325px] px-[17px]">
+              <div className="mt-4 w-[373px] px-[17px] md:w-full">
                 <div className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/50 p-3">
                   <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
                     Region zone
