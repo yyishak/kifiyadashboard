@@ -779,9 +779,10 @@ export const EthiopiaMapView = (props: Props) => {
               // Keep the "details" dialog outside the controls stack (DOM order),
               // but position it identically in the top-right corner.
               "absolute right-3 top-3",
-              "h-[calc(100svh-1.5rem)] max-h-[calc(100%-1.5rem)] w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[340px]",
+              // Drawer-ish sizing: card height with internal scroll (avoid full-screen).
+              "h-auto max-h-[min(72svh,560px)] w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[340px]",
               "bg-[color:var(--card)]/90 backdrop-blur-xl",
-              "md:right-4 md:top-4 md:h-[calc(100%-2rem)] md:w-[420px]",
+              "md:right-4 md:top-4 md:max-h-[min(72svh,620px)] md:w-[420px]",
               "transition-transform duration-250 ease-out will-change-transform",
               isSidebarOpen ? "translate-x-0" : "translate-x-[calc(100%+24px)]",
               isSidebarOpen ? "pointer-events-auto" : "pointer-events-none",
@@ -790,7 +791,7 @@ export const EthiopiaMapView = (props: Props) => {
             aria-modal="true"
             aria-label="Region details"
           >
-            <div className="m-0 flex h-full w-full flex-col items-center justify-center leading-[9px] md:items-stretch">
+            <div className="m-0 flex h-full w-full flex-col items-center justify-center overflow-y-auto leading-[9px] md:items-stretch">
               <div className="flex w-[373px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5 md:w-full">
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold tracking-wide text-[color:var(--fg)]">
