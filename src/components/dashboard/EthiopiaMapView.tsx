@@ -773,18 +773,23 @@ export const EthiopiaMapView = (props: Props) => {
           aria-hidden
         />
 
-        <aside
-          className={[
-            "h-[calc(100svh-1.5rem)] max-h-[calc(100%-1.5rem)] w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[340px]",
-            "bg-[color:var(--card)]/90 backdrop-blur-xl",
-            "md:h-[calc(100%-2rem)] md:w-[420px]",
-            "pointer-events-auto",
-          ].join(" ")}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Region details"
-        >
-          {sidebar ? (
+        {sidebar ? (
+          <aside
+            className={[
+              // Keep the "details" dialog outside the controls stack (DOM order),
+              // but position it identically in the top-right corner.
+              "absolute right-3 top-3",
+              "h-[calc(100svh-1.5rem)] max-h-[calc(100%-1.5rem)] w-full max-w-[92vw] overflow-hidden rounded-2xl border border-[color:var(--card-border)] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[340px]",
+              "bg-[color:var(--card)]/90 backdrop-blur-xl",
+              "md:right-4 md:top-4 md:h-[calc(100%-2rem)] md:w-[420px]",
+              "transition-transform duration-250 ease-out will-change-transform",
+              isSidebarOpen ? "translate-x-0" : "translate-x-[calc(100%+24px)]",
+              isSidebarOpen ? "pointer-events-auto" : "pointer-events-none",
+            ].join(" ")}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Region details"
+          >
             <div className="m-0 flex h-full w-full flex-col items-center justify-center leading-[9px]">
               <div className="flex w-[325px] items-start justify-between gap-0 border-b border-[color:var(--card-border)] px-[11px] py-3.5">
                 <div className="min-w-0">
@@ -806,6 +811,38 @@ export const EthiopiaMapView = (props: Props) => {
                 >
                   ×
                 </button>
+              </div>
+
+              <div className="w-[325px] px-0 pt-0">
+                <div className="relative -mx-px overflow-hidden rounded-none border border-[color:var(--card-border)] bg-[color:var(--surface-2)]/40 p-3">
+                  <div className="text-[11px] font-semibold tracking-wide text-[color:var(--muted)]">
+                    Region map
+                  </div>
+                  <div className="mt-2 overflow-visible">
+                    <svg
+                      viewBox="0 0 320 160"
+                      className="h-[170px] w-[calc(100%+24px)] -mx-3"
+                      aria-label={`${sidebar.displayName} map`}
+                      role="img"
+                    >
+                      <defs>
+                        <linearGradient id="regionFill" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="rgba(242,139,44,0.20)" />
+                          <stop offset="100%" stopColor="rgba(242,139,44,0.05)" />
+                        </linearGradient>
+                      </defs>
+
+                      <rect x="0" y="22" width="320" height="116" fill="rgba(0,0,0,0.12)" />
+                      <path
+                        d={geometryToSvgPath(sidebar.geometry, 320, 160, 14)}
+                        fill={sidebarHeat.fill}
+                        stroke={sidebarHeat.stroke}
+                        strokeWidth="2"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <div className="px-[17px] pb-0 pt-0">
@@ -856,8 +893,8 @@ export const EthiopiaMapView = (props: Props) => {
                 Click another region to update this panel.
               </div>
             </div>
-          ) : null}
-        </aside>
+          </aside>
+        ) : null}
 
         <div
           className={[
